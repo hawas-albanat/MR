@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -29,13 +30,9 @@ button:disabled{opacity:.5}
 #categories{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px}
 .cat{white-space:nowrap;background:#e8f2e9;color:#14532d}
 .cat.active{background:var(--green);color:white}
-#products{display:grid;grid-template-columns:repeat(3, 1fr);gap:15px}
-@media (max-width: 768px){
-  #products{grid-template-columns:repeat(2, 1fr);}
-}
-@media (max-width: 480px){
-  #products{grid-template-columns:repeat(1, 1fr);}
-}
+#products{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+@media(max-width:768px){#products{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){#products{grid-template-columns:repeat(1,1fr)}}
 .product{border:1px solid var(--border);border-radius:13px;overflow:hidden;background:white;min-width:0;display:flex;flex-direction:column;justify-content:space-between}
 .product img{width:100%;height:150px;object-fit:cover;background:#edf2ed}
 .product .info{padding:12px;flex:1;display:flex;flex-direction:column}
@@ -51,6 +48,7 @@ small{color:#657168}
 .preview{width:90px;height:90px;object-fit:cover;border-radius:10px;display:none;margin:5px 0}
 label{font-size:14px;font-weight:bold;display:block}
 .empty{grid-column:1/-1;text-align:center;padding:25px;color:#68746b}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -58,6 +56,7 @@ label{font-size:14px;font-weight:bold;display:block}
 <h1>📋 دليل أسعار المحل</h1>
 <p>كل أسعار منتجاتك وأقسامك في مكان واحد</p>
 </header>
+
 <main>
 <div class="panel">
 <h2>🔎 البحث عن منتج</h2>
@@ -65,10 +64,30 @@ label{font-size:14px;font-weight:bold;display:block}
 <div id="status">جاري الاتصال بقاعدة البيانات...</div>
 </div>
 
+<!-- تسجيل دخول الإدارة -->
+<div class="panel" id="authPanel">
+<h2>🔐 إدارة المحل</h2>
+<div id="loginForm">
+<p>تسجيل الدخول مطلوب لإضافة المنتجات وتعديلها.</p>
+<label for="loginEmail">البريد الإلكتروني</label>
+<input id="loginEmail" type="email" autocomplete="username" placeholder="البريد الإلكتروني" dir="ltr">
+<label for="loginPassword">كلمة المرور</label>
+<input id="loginPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور" dir="ltr">
+<button id="loginBtn" type="button">تسجيل الدخول</button>
+</div>
+<div id="adminInfo" hidden>
+<p>✅ تم تسجيل الدخول بحساب الإدارة.</p>
+<div class="row">
+<button id="logoutBtn" class="secondary" type="button">تسجيل الخروج</button>
+</div>
+</div>
+<div id="authMessage" role="status"></div>
+</div>
+
 <div class="panel">
 <div class="row" style="align-items:center">
 <h2 style="flex:1">📂 الأقسام</h2>
-<button id="addCat" type="button">+ قسم جديد</button>
+<button id="addCat" class="admin-only" type="button" hidden>+ قسم جديد</button>
 </div>
 <div id="categories"></div>
 <div id="catForm" hidden>
@@ -84,7 +103,7 @@ label{font-size:14px;font-weight:bold;display:block}
 <div class="panel">
 <div class="row" style="align-items:center">
 <h2 style="flex:1">🛍️ المنتجات</h2>
-<button id="addProduct" type="button">+ منتج جديد</button>
+<button id="addProduct" class="admin-only" type="button" hidden>+ منتج جديد</button>
 </div>
 <div id="productForm" hidden>
 <label for="pName">اسم المنتج *</label>
@@ -112,18 +131,23 @@ label{font-size:14px;font-weight:bold;display:block}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = "https://sovxdgvrwbohhyuhktnp.supabase.co";
-const SUPABASE_KEY = "sb_publishable_itvtDhJzdXH1X3GUoshKkg_neEvjG3i";
-const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const SUPABASE_URL="https://sovxdgvrwbohhyuhktnp.supabase.co";
+const SUPABASE_KEY="sb_publishable_itvtDhJzdXH1X3GUoshKkg_neEvjG3i";
+const ADMIN_UID="8b129621-d7d7-4dd7-9b92-eb624658fcb7";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const $ = id => document.getElementById(id);
-let categories = [], products = [], selectedCategory = "all";
-let editingProduct = null, editingCategory = null, imageUrl = "";
-const status = $("status");
+const $=id=>document.getElementById(id);
+let categories=[],products=[],selectedCategory="all";
+let editingProduct=null,editingCategory=null,imageUrl="";
+let isAdmin=false;
 
 function message(text,error=false){
- status.textContent=text;
- status.className=error?"error":"ok";
+ $("status").textContent=text;
+ $("status").className=error?"error":"ok";
+}
+function authMessage(text,error=false){
+ $("authMessage").textContent=text;
+ $("authMessage").style.color=error?"#b91c1c":"#166534";
 }
 function escapeHTML(value){
  return String(value??"").replace(/[&<>"']/g,c=>({
@@ -133,6 +157,74 @@ function escapeHTML(value){
 function money(value){
  return Number(value).toLocaleString("ar-EG",{maximumFractionDigits:2})+" ج.م";
 }
+function updateAdminUI(){
+ document.querySelectorAll(".admin-only").forEach(el=>{
+  el.hidden=!isAdmin;
+ });
+ $("loginForm").hidden=isAdmin;
+ $("adminInfo").hidden=!isAdmin;
+ $("authPanel").hidden=isAdmin;
+ if(!isAdmin){
+  $("catForm").hidden=true;
+  $("productForm").hidden=true;
+  editingProduct=null;
+  editingCategory=null;
+ }
+ renderCategories();
+ renderProducts();
+}
+async function refreshSession(){
+ const {data,error}=await db.auth.getSession();
+ if(error)throw error;
+ const user=data.session?.user;
+ isAdmin=!!user&&user.id===ADMIN_UID;
+ updateAdminUI();
+ if(user&&!isAdmin){
+  await db.auth.signOut();
+  authMessage("هذا الحساب غير مصرح له بإدارة المحل.",true);
+ }
+}
+$("loginBtn").onclick=async()=>{
+ const email=$("loginEmail").value.trim();
+ const password=$("loginPassword").value;
+ if(!email||!password){
+  authMessage("اكتب البريد الإلكتروني وكلمة المرور.",true);
+  return;
+ }
+ $("loginBtn").disabled=true;
+ authMessage("جاري تسجيل الدخول...");
+ try{
+  const {data,error}=await db.auth.signInWithPassword({email,password});
+  if(error)throw error;
+  if(data.user?.id!==ADMIN_UID){
+   await db.auth.signOut();
+   isAdmin=false;
+   updateAdminUI();
+   throw new Error("هذا الحساب غير مصرح له بإدارة المحل.");
+  }
+  isAdmin=true;
+  authMessage("");
+  updateAdminUI();
+ }catch(e){
+  authMessage("تعذر تسجيل الدخول: "+e.message,true);
+ }finally{
+  $("loginBtn").disabled=false;
+  $("loginPassword").value="";
+ }
+};
+$("logoutBtn").onclick=async()=>{
+ const {error}=await db.auth.signOut();
+ if(error){authMessage("تعذر تسجيل الخروج: "+error.message,true);return}
+ isAdmin=false;
+ updateAdminUI();
+ authMessage("تم تسجيل الخروج.");
+};
+
+db.auth.onAuthStateChange((_event,session)=>{
+ isAdmin=!!session?.user&&session.user.id===ADMIN_UID;
+ updateAdminUI();
+});
+
 async function loadAll(){
  message("جاري تحميل البيانات...");
  try{
@@ -150,7 +242,7 @@ async function loadAll(){
   message("تم تحميل البيانات بنجاح.");
  }catch(e){
   console.error(e);
-  message("تعذر تحميل البيانات. تأكد من إعداد صلاحيات Supabase والجداول والاتصال بالإنترنت.\n"+(e.message||""),true);
+  message("تعذر تحميل البيانات. تحقق من إعدادات Supabase والإنترنت.\n"+(e.message||""),true);
  }
 }
 function renderCategories(){
@@ -166,16 +258,17 @@ function renderCategories(){
   b.className="cat"+(selectedCategory===c.id?" active":"");
   b.textContent=c.name;
   b.onclick=()=>{selectedCategory=c.id;renderCategories();renderProducts()};
-  b.oncontextmenu=e=>{
-   e.preventDefault();
-   if(confirm("تعديل اسم القسم "+c.name+"؟")) editCategory(c);
-  };
+  if(isAdmin){
+   b.oncontextmenu=e=>{
+    e.preventDefault();
+    if(confirm("تعديل اسم القسم "+c.name+"؟"))editCategory(c);
+   };
+  }
   box.appendChild(b);
  });
 }
 function fillCategorySelect(){
- const select=$("pCategory");
- select.innerHTML='<option value="">اختر القسم</option>'+
+ $("pCategory").innerHTML='<option value="">اختر القسم</option>'+
  categories.map(c=>`<option value="${escapeHTML(c.id)}">${escapeHTML(c.name)}</option>`).join("");
 }
 function renderProducts(){
@@ -183,8 +276,8 @@ function renderProducts(){
  const list=products.filter(p=>{
   const matchesCategory=selectedCategory==="all"||p.category_id===selectedCategory;
   const category=categories.find(c=>c.id===p.category_id);
-  const matchesTerm=(p.name+" "+(p.notes||"")+" "+(category?.name||"")).toLowerCase().includes(term);
-  return matchesCategory&&matchesTerm;
+  const text=(p.name+" "+(p.notes||"")+" "+(category?.name||"")).toLowerCase();
+  return matchesCategory&&text.includes(term);
  });
  const box=$("products");
  if(!list.length){
@@ -193,44 +286,57 @@ function renderProducts(){
  }
  box.innerHTML=list.map(p=>{
   const category=categories.find(c=>c.id===p.category_id);
-  const img=p.image_url?`<img src="${escapeHTML(p.image_url)}" alt="${escapeHTML(p.name)}" loading="lazy">`:
-  '<div style="height:150px;display:grid;place-items:center;background:#edf2ed;font-size:42px">🛍️</div>';
+  const img=p.image_url
+   ?`<img src="${escapeHTML(p.image_url)}" alt="${escapeHTML(p.name)}" loading="lazy">`
+   :'<div style="height:150px;display:grid;place-items:center;background:#edf2ed;font-size:42px">🛍️</div>';
+  const actions=isAdmin?`<div class="actions">
+   <button class="secondary" data-edit="${escapeHTML(p.id)}">تعديل</button>
+   <button class="danger" data-delete="${escapeHTML(p.id)}">حذف</button>
+   </div>`:"";
   return `<article class="product">${img}<div class="info">
-  <h3>${escapeHTML(p.name)}</h3>
-  <div class="price">${money(p.price)}</div>
-  <small>${escapeHTML(category?.name||"بدون قسم")}</small>
-  ${p.notes?`<div class="notes">${escapeHTML(p.notes)}</div>`:""}
-  <div class="actions">
-  <button class="secondary" data-edit="${p.id}">تعديل</button>
-  <button class="danger" data-delete="${p.id}">حذف</button>
-  </div></div></article>`;
+   <h3>${escapeHTML(p.name)}</h3>
+   <div class="price">${money(p.price)}</div>
+   <small>${escapeHTML(category?.name||"بدون قسم")}</small>
+   ${p.notes?`<div class="notes">${escapeHTML(p.notes)}</div>`:""}
+   ${actions}</div></article>`;
  }).join("");
- box.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editProduct(products.find(p=>p.id===b.dataset.edit)));
- box.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteProduct(products.find(p=>p.id===b.dataset.delete)));
+ if(isAdmin){
+  box.querySelectorAll("[data-edit]").forEach(b=>{
+   b.onclick=()=>editProduct(products.find(p=>String(p.id)===b.dataset.edit));
+  });
+  box.querySelectorAll("[data-delete]").forEach(b=>{
+   b.onclick=()=>deleteProduct(products.find(p=>String(p.id)===b.dataset.delete));
+  });
+ }
 }
 $("search").addEventListener("input",renderProducts);
 
 $("addCat").onclick=()=>{
+ if(!isAdmin)return;
  editingCategory=null;
  $("catName").value="";
  $("catForm").hidden=false;
  $("catName").focus();
 };
-$("cancelCat").onclick=()=>{$("catForm").hidden=true;editingCategory=null};
+$("cancelCat").onclick=()=>{
+ $("catForm").hidden=true;editingCategory=null;
+};
 function editCategory(c){
+ if(!isAdmin||!c)return;
  editingCategory=c;
  $("catName").value=c.name;
  $("catForm").hidden=false;
  $("catName").focus();
 }
 $("saveCat").onclick=async()=>{
+ if(!isAdmin)return alert("سجّل الدخول أولًا.");
  const name=$("catName").value.trim();
  if(!name)return alert("اكتب اسم القسم أولًا.");
  $("saveCat").disabled=true;
  try{
-  const result=editingCategory?
-   await db.from("categories").update({name}).eq("id",editingCategory.id):
-   await db.from("categories").insert({name});
+  const result=editingCategory
+   ?await db.from("categories").update({name}).eq("id",editingCategory.id)
+   :await db.from("categories").insert({name});
   if(result.error)throw result.error;
   $("catForm").hidden=true;
   editingCategory=null;
@@ -240,6 +346,7 @@ $("saveCat").onclick=async()=>{
 };
 
 $("addProduct").onclick=()=>{
+ if(!isAdmin)return;
  editingProduct=null;imageUrl="";
  $("pName").value="";$("pPrice").value="";
  $("pNotes").value="";$("pImage").value="";
@@ -248,31 +355,38 @@ $("addProduct").onclick=()=>{
  $("productForm").hidden=false;
  $("pName").focus();
 };
-$("cancelProduct").onclick=()=>{$("productForm").hidden=true;editingProduct=null};
-
+$("cancelProduct").onclick=()=>{
+ $("productForm").hidden=true;editingProduct=null;
+};
 $("pImage").onchange=()=>{
  const file=$("pImage").files[0];
  if(!file){$("preview").style.display="none";return}
- if(!file.type.startsWith("image/")){alert("اختار ملف صورة.");$("pImage").value="";return}
- if(file.size>6*1024*1024){alert("الصورة أكبر من 6 ميجابايت. اختار صورة أصغر.");$("pImage").value="";return}
+ if(!file.type.startsWith("image/")){
+  alert("اختار ملف صورة.");$("pImage").value="";return;
+ }
+ if(file.size>6*1024*1024){
+  alert("الصورة أكبر من 6 ميجابايت. اختار صورة أصغر.");
+  $("pImage").value="";return;
+ }
  $("preview").src=URL.createObjectURL(file);
  $("preview").style.display="block";
 };
-
 function editProduct(p){
- if(!p)return;
+ if(!isAdmin||!p)return;
  editingProduct=p;imageUrl=p.image_url||"";
  $("pName").value=p.name;
  $("pPrice").value=p.price;
  $("pNotes").value=p.notes||"";
  fillCategorySelect();$("pCategory").value=p.category_id;
  $("pImage").value="";
- if(imageUrl){$("preview").src=imageUrl;$("preview").style.display="block"}
- else $("preview").style.display="none";
+ if(imageUrl){
+  $("preview").src=imageUrl;$("preview").style.display="block";
+ }else $("preview").style.display="none";
  $("productForm").hidden=false;
  $("productForm").scrollIntoView({behavior:"smooth",block:"start"});
 }
 $("saveProduct").onclick=async()=>{
+ if(!isAdmin)return alert("سجّل الدخول أولًا.");
  const name=$("pName").value.trim();
  const price=$("pPrice").value;
  const category_id=$("pCategory").value;
@@ -287,24 +401,27 @@ $("saveProduct").onclick=async()=>{
   const file=$("pImage").files[0];
   if(file){
    const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
-   const path=Date.now()+"-"+Math.random().toString(36).slice(2)+"."+ext;
-   const upload=await db.storage.from("product-images").upload(path,file,{upsert:false,contentType:file.type});
+   const path=crypto.randomUUID()+"."+ext;
+   const upload=await db.storage.from("product-images").upload(path,file,{
+    upsert:false,contentType:file.type
+   });
    if(upload.error)throw upload.error;
    imageUrl=db.storage.from("product-images").getPublicUrl(path).data.publicUrl;
   }
   const payload={name,price:Number(price),category_id,notes,image_url:imageUrl||null};
-  const result=editingProduct?
-   await db.from("products").update(payload).eq("id",editingProduct.id):
-   await db.from("products").insert(payload);
+  const result=editingProduct
+   ?await db.from("products").update(payload).eq("id",editingProduct.id)
+   :await db.from("products").insert(payload);
   if(result.error)throw result.error;
   $("productForm").hidden=true;editingProduct=null;
   await loadAll();
  }catch(e){
   console.error(e);
-  message("فشل حفظ المنتج: "+e.message+"\nقد تحتاج لتشغيل إعداد SQL وصلاحيات الصور في Supabase.",true);
+  message("فشل حفظ المنتج: "+e.message,true);
  }finally{$("saveProduct").disabled=false}
 };
 async function deleteProduct(p){
+ if(!isAdmin)return alert("سجّل الدخول أولًا.");
  if(!p||!confirm("متأكد إنك عايز تحذف المنتج: "+p.name+"؟"))return;
  try{
   const {error}=await db.from("products").delete().eq("id",p.id);
@@ -312,7 +429,13 @@ async function deleteProduct(p){
   await loadAll();
  }catch(e){message("فشل حذف المنتج: "+e.message,true)}
 }
-loadAll();
+
+async function start(){
+ try{await refreshSession()}catch(e){console.error(e)}
+ await loadAll();
+}
+start();
+
 if("serviceWorker" in navigator){
  window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.error));
 }
