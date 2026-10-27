@@ -1,1390 +1,1329 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#166534">
-  <meta name="description" content="كتالوج منتجات وأسعار محل هوس البنات">
-  <meta name="application-name" content="محل هوس البنات">
-  <title>محل هوس البنات</title>
-
-  <link rel="manifest" href="./manifest.json">
-
-  <style>
-    :root {
-      --green: #166534;
-      --green-dark: #14532d;
-      --green-light: #dcfce7;
-      --bg: #f3f7f3;
-      --white: #ffffff;
-      --text: #172017;
-      --muted: #667366;
-      --danger: #dc2626;
-      --border: #e2e8e2;
-      --radius: 14px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Tahoma, Arial, sans-serif;
-      line-height: 1.6;
-    }
-
-    button, input, textarea, select {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    button:disabled {
-      opacity: .6;
-      cursor: not-allowed;
-    }
-
-    header {
-      background: var(--green);
-      color: white;
-      padding: 18px 14px;
-      text-align: center;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 25px;
-    }
-
-    header p {
-      margin: 5px 0 0;
-      font-size: 14px;
-      opacity: .92;
-    }
-
-    .container {
-      width: min(1100px, 100%);
-      margin: auto;
-      padding: 14px;
-    }
-
-    .panel {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px #00000008;
-    }
-
-    h2 {
-      margin: 0 0 12px;
-      font-size: 20px;
-    }
-
-    h3 {
-      margin: 0 0 10px;
-      font-size: 17px;
-    }
-
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 9px;
-      align-items: center;
-    }
-
-    .field {
-      margin-bottom: 12px;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-      font-size: 14px;
-      margin-bottom: 5px;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 11px;
-      border: 1px solid #cbd5cb;
-      border-radius: 9px;
-      background: white;
-      color: var(--text);
-      outline-color: var(--green);
-    }
-
-    textarea {
-      min-height: 85px;
-      resize: vertical;
-    }
-
-    .btn {
-      border: 0;
-      border-radius: 9px;
-      padding: 10px 13px;
-      background: var(--green);
-      color: white;
-      font-weight: bold;
-    }
-
-    .btn:hover {
-      filter: brightness(.95);
-    }
-
-    .btn-secondary {
-      background: #e5e7eb;
-      color: #222;
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: white;
-    }
-
-    .btn-whatsapp {
-      background: #128c4a;
-      color: white;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      gap: 6px;
-      border-radius: 10px;
-      padding: 12px 10px;
-      font-weight: bold;
-    }
-
-    .btn-small {
-      padding: 7px 9px;
-      font-size: 13px;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .status {
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 9px;
-      background: #f0fdf4;
-      color: var(--green-dark);
-      overflow-wrap: anywhere;
-    }
-
-    .status.error {
-      background: #fef2f2;
-      color: #991b1b;
-    }
-
-    .categories {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 10px 0 16px;
-    }
-
-    .category-chip {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px 10px;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      max-width: 100%;
-    }
-
-    .category-chip.active {
-      background: var(--green-light);
-      border-color: var(--green);
-    }
-
-    .category-name {
-      border: 0;
-      background: transparent;
-      padding: 0;
-      color: inherit;
-      font-weight: bold;
-      overflow-wrap: anywhere;
-    }
-
-    .category-actions {
-      display: flex;
-      gap: 4px;
-    }
-
-    .category-actions button {
-      padding: 4px 7px;
-      font-size: 12px;
-    }
-
-    .products-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .product-card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      min-width: 0;
-      cursor: pointer;
-      transition: transform .15s, box-shadow .15s;
-    }
-
-    .product-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 14px #00000010;
-    }
-
-    .product-image-wrap {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 5px;
-    }
-
-    .product-image {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-    }
-
-    .product-info {
-      padding: 10px;
-    }
-
-    .product-title {
-      margin: 0 0 6px;
-      font-size: 15px;
-      overflow-wrap: anywhere;
-    }
-
-    .product-price {
-      font-weight: bold;
-      color: var(--green);
-      font-size: 17px;
-    }
-
-    .product-category {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 3px;
-    }
-
-    .admin-product-actions {
-      display: flex;
-      gap: 5px;
-      padding: 0 8px 9px;
-    }
-
-    .admin-product-actions button {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .empty {
-      text-align: center;
-      padding: 25px 10px;
-      color: var(--muted);
-      background: white;
-      border-radius: var(--radius);
-    }
-
-    .detail-image-wrap {
-      width: 100%;
-      height: min(55vh, 440px);
-      min-height: 230px;
-      background: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      margin: 12px 0;
-    }
-
-    .detail-image {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
-    .detail-price {
-      color: var(--green);
-      font-size: 24px;
-      font-weight: bold;
-      margin: 8px 0;
-    }
-
-    .detail-description {
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
-
-    .detail-meta {
-      background: #f8faf8;
-      border-radius: 10px;
-      padding: 10px;
-      margin: 8px 0;
-      overflow-wrap: anywhere;
-    }
-
-    .whatsapp-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 9px;
-      margin-top: 16px;
-    }
-
-    footer {
-      text-align: center;
-      color: var(--muted);
-      padding: 20px 10px;
-      font-size: 12px;
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        padding: 10px;
-      }
-
-      header h1 {
-        font-size: 22px;
-      }
-
-      .products-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-      }
-
-      .product-info {
-        padding: 8px;
-      }
-
-      .product-title {
-        font-size: 13px;
-      }
-
-      .product-price {
-        font-size: 15px;
-      }
-
-      .admin-product-actions {
-        padding: 0 5px 7px;
-        gap: 4px;
-      }
-
-      .admin-product-actions button {
-        padding: 7px 4px;
-        font-size: 11px;
-      }
-
-      .whatsapp-buttons {
-        grid-template-columns: 1fr;
-      }
-
-      .category-chip {
-        gap: 5px;
-        padding: 7px;
-      }
-
-      .category-actions button {
-        padding: 5px;
-      }
-    }
-  </style>
-</head>
-
-<body>
-  <header>
-    <h1>🌸 محل هوس البنات 🌸</h1>
-    <p>كتالوج المنتجات والأسعار</p>
-  </header>
-
-  <main class="container">
-    <section id="loginPanel" class="panel">
-      <h2>دخول الإدارة</h2>
-      <p>تسجيل الدخول مطلوب لإضافة المنتجات وتعديلها وإدارة الأقسام.</p>
-
-      <form id="loginForm">
-        <div class="field">
-          <label for="email">البريد الإلكتروني</label>
-          <input id="email" type="email" autocomplete="username"
-                 required placeholder="البريد الإلكتروني">
-        </div>
-
-        <div class="field">
-          <label for="password">كلمة المرور</label>
-          <input id="password" type="password" autocomplete="current-password"
-                 required placeholder="كلمة المرور">
-        </div>
-
-        <button class="btn" type="submit">تسجيل الدخول</button>
-      </form>
-
-      <div id="loginStatus" class="status hidden"></div>
-    </section>
-
-    <section id="adminPanel" class="panel hidden">
-      <div class="row" style="justify-content:space-between">
-        <h2>لوحة الإدارة</h2>
-        <button id="logoutBtn" class="btn btn-secondary" type="button">
-          تسجيل الخروج
-        </button>
-      </div>
-
-      <h3>إدارة الأقسام</h3>
-
-      <form id="categoryForm">
-        <div class="field">
-          <label for="categoryName">اسم القسم الجديد</label>
-          <input id="categoryName" required maxlength="100"
-                 placeholder="مثال: ملابس، إكسسوارات">
-        </div>
-        <button class="btn" type="submit">إضافة قسم</button>
-        <button id="cancelCategoryEdit" class="btn btn-secondary hidden"
-                type="button">إلغاء التعديل</button>
-      </form>
-
-      <div id="categoryStatus" class="status hidden"></div>
-
-      <hr style="border:0;border-top:1px solid var(--border);margin:18px 0">
-
-      <h3 id="productFormTitle">إضافة منتج جديد</h3>
-
-      <form id="productForm">
-        <div class="field">
-          <label for="productName">اسم المنتج</label>
-          <input id="productName" required maxlength="200"
-                 placeholder="اسم المنتج">
-        </div>
-
-        <div class="field">
-          <label for="productPrice">السعر بالجنيه</label>
-          <input id="productPrice" type="number" min="0" step="0.01"
-                 required placeholder="السعر">
-        </div>
-
-        <div class="field">
-          <label for="productCategory">القسم</label>
-          <select id="productCategory" required>
-            <option value="">اختر القسم</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="productDescription">وصف المنتج</label>
-          <textarea id="productDescription"
-                    placeholder="تفاصيل المنتج"></textarea>
-        </div>
-
-        <div class="field">
-          <label for="productColors">الألوان المتاحة</label>
-          <input id="productColors" placeholder="مثال: أسود، أبيض، بيج">
-          <small>اكتب الألوان وافصل بينها بفاصلة.</small>
-        </div>
-
-        <div class="field">
-          <label for="productSizes">المقاسات المتاحة</label>
-          <input id="productSizes" placeholder="مثال: S، M، L، XL">
-          <small>اكتب المقاسات وافصل بينها بفاصلة.</small>
-        </div>
-
-        <div class="field">
-          <label for="productImage">صورة المنتج</label>
-          <input id="productImage" type="file" accept="image/*">
-          <small id="imageHelp">اختَر صورة واضحة للمنتج.</small>
-        </div>
-
-        <button id="saveProductBtn" class="btn" type="submit">
-          حفظ المنتج
-        </button>
-        <button id="cancelProductEdit" class="btn btn-secondary hidden"
-                type="button">إلغاء التعديل</button>
-      </form>
-
-      <div id="productStatus" class="status hidden"></div>
-    </section>
-
-    <section id="catalogSection">
-      <div class="panel">
-        <h2>🛍️ منتجات المحل</h2>
-
-        <div class="field">
-          <label for="searchInput">البحث عن منتج</label>
-          <input id="searchInput" type="search"
-                 placeholder="اكتب اسم المنتج أو وصفه...">
-        </div>
-
-        <div id="categories" class="categories"></div>
-      </div>
-
-      <div id="catalogStatus" class="status hidden"></div>
-      <div id="productsGrid" class="products-grid"></div>
-      <div id="emptyState" class="empty hidden">لا توجد منتجات لعرضها.</div>
-    </section>
-
-    <section id="detailSection" class="panel hidden">
-      <button id="backBtn" class="btn btn-secondary" type="button">
-        ← الرجوع للمنتجات
-      </button>
-
-      <div id="detailContent"></div>
-    </section>
-  </main>
-
-  <footer>
-    محل هوس البنات — أهلاً وسهلاً بكم 🌸
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <script>
-    // إعدادات Supabase
-    const SUPABASE_URL = "https://sovxdgvrwbohhyuhktnp.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_itvtDhJzdXH1X3GUoshKkg_neEvjG3i";
-
-    // حساب الإدارة المسموح له بتعديل الواجهة
-    const ADMIN_UID = "8b129621-d7d7-4dd7-9b92-eb624658fcb7";
-
-    const supabaseClient = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
-
-    let currentUser = null;
-    let isAdmin = false;
-    let products = [];
-    let categories = [];
-    let selectedCategory = "all";
-    let editingProductId = null;
-    let editingCategoryId = null;
-    let currentDetailProductId = null;
-
-    const $ = id => document.getElementById(id);
-
-    function showStatus(id, message, error = false) {
-      const el = $(id);
-      el.textContent = message;
-      el.classList.remove("hidden", "error");
-      if (error) el.classList.add("error");
-    }
-
-    function hideStatus(id) {
-      $(id).classList.add("hidden");
-    }
-
-    function escapeHTML(value) {
-      return String(value ?? "").replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      })[char]);
-    }
-
-    function formatPrice(value) {
-      const number = Number(value);
-      if (!Number.isFinite(number)) return "السعر غير محدد";
-      return number.toLocaleString("ar-EG", {
-        maximumFractionDigits: 2
-      }) + " جنيه";
-    }
-
-    function categoryName(categoryId) {
-      const category = categories.find(
-        item => String(item.id) === String(categoryId)
-      );
-      return category ? category.name : "بدون قسم";
-    }
-
-    function requireAdmin() {
-      if (!isAdmin || !currentUser || currentUser.id !== ADMIN_UID) {
-        alert("هذه العملية متاحة للإدارة فقط.");
-        return false;
-      }
-      return true;
-    }
-
-    function setLoggedInUI() {
-      $("loginPanel").classList.toggle("hidden", isAdmin);
-      $("adminPanel").classList.toggle("hidden", !isAdmin);
-    }
-
-    async function loadCategories() {
-      const { data, error } = await supabaseClient
-        .from("categories")
-        .select("*")
-        .order("id", { ascending: true });
-
-      if (error) throw error;
-
-      categories = data || [];
-      renderCategories();
-      populateCategorySelect();
-    }
-
-    async function loadProducts() {
-      const { data, error } = await supabaseClient
-        .from("products")
-        .select("*")
-        .order("id", { ascending: false });
-
-      if (error) {
-        if (/colors|sizes|column/i.test(error.message || "")) {
-          throw new Error(
-            "تعذر قراءة المنتجات. تأكد من تنفيذ أمر SQL لإضافة حقلي colors وsizes."
-          );
-        }
-        throw error;
-      }
-
-      products = data || [];
-      renderProducts();
-
-      if (currentDetailProductId !== null) {
-        const product = products.find(
-          item => String(item.id) === String(currentDetailProductId)
-        );
-        if (product) renderProductDetail(product);
-        else closeProductDetail();
-      }
-    }
-
-    async function refreshAll() {
-      try {
-        showStatus("catalogStatus", "جارٍ تحميل المنتجات...");
-        await loadCategories();
-        await loadProducts();
-        hideStatus("catalogStatus");
-      } catch (error) {
-        showStatus(
-          "catalogStatus",
-          "حدث خطأ أثناء تحميل البيانات: " + error.message,
-          true
-        );
-      }
-    }
-
-    function renderCategories() {
-      const container = $("categories");
-      container.innerHTML = "";
-
-      const allChip = document.createElement("div");
-      allChip.className = "category-chip" +
-        (selectedCategory === "all" ? " active" : "");
-
-      const allButton = document.createElement("button");
-      allButton.type = "button";
-      allButton.className = "category-name";
-      allButton.textContent = "كل المنتجات";
-      allButton.onclick = () => {
-        selectedCategory = "all";
-        renderCategories();
-        renderProducts();
-      };
-
-      allChip.appendChild(allButton);
-      container.appendChild(allChip);
-
-      categories.forEach(category => {
-        const chip = document.createElement("div");
-        chip.className = "category-chip" +
-          (String(selectedCategory) === String(category.id) ? " active" : "");
-
-        const nameButton = document.createElement("button");
-        nameButton.type = "button";
-        nameButton.className = "category-name";
-        nameButton.textContent = category.name;
-        nameButton.onclick = () => {
-          selectedCategory = String(category.id);
-          renderCategories();
-          renderProducts();
-        };
-        chip.appendChild(nameButton);
-
-        if (isAdmin) {
-          const actions = document.createElement("div");
-          actions.className = "category-actions";
-
-          const editBtn = document.createElement("button");
-          editBtn.type = "button";
-          editBtn.className = "btn btn-secondary";
-          editBtn.textContent = "✏️";
-          editBtn.title = "تعديل القسم";
-          editBtn.onclick = () => startCategoryEdit(category);
-
-          const deleteBtn = document.createElement("button");
-          deleteBtn.type = "button";
-          deleteBtn.className = "btn btn-danger";
-          deleteBtn.textContent = "🗑️";
-          deleteBtn.title = "حذف القسم";
-          deleteBtn.onclick = () => deleteCategory(category);
-
-          actions.append(editBtn, deleteBtn);
-          chip.appendChild(actions);
-        }
-
-        container.appendChild(chip);
-      });
-    }
-
-    function populateCategorySelect() {
-      const select = $("productCategory");
-      const previousValue = select.value;
-
-      select.innerHTML = '<option value="">اختر القسم</option>';
-
-      categories.forEach(category => {
-        const option = document.createElement("option");
-        option.value = category.id;
-        option.textContent = category.name;
-        select.appendChild(option);
-      });
-
-      if (categories.some(
-        item => String(item.id) === String(previousValue)
-      )) {
-        select.value = previousValue;
-      }
-    }
-
-    function renderProducts() {
-      const grid = $("productsGrid");
-      const search = $("searchInput").value.trim().toLowerCase();
-
-      grid.innerHTML = "";
-
-      const filtered = products.filter(product => {
-        const matchesCategory =
-          selectedCategory === "all" ||
-          String(product.category_id) === String(selectedCategory);
-
-        const searchable = [
-          product.name,
-          product.description,
-          categoryName(product.category_id),
-          product.colors,
-          product.sizes
-        ].join(" ").toLowerCase();
-
-        return matchesCategory && searchable.includes(search);
-      });
-
-      $("emptyState").classList.toggle("hidden", filtered.length > 0);
-
-      filtered.forEach(product => {
-        const card = document.createElement("article");
-        card.className = "product-card";
-        card.tabIndex = 0;
-        card.setAttribute("role", "button");
-        card.setAttribute("aria-label", "عرض تفاصيل " + product.name);
-
-        const imageWrap = document.createElement("div");
-        imageWrap.className = "product-image-wrap";
-
-        if (product.image_url) {
-          const image = document.createElement("img");
-          image.className = "product-image";
-          image.src = product.image_url;
-          image.alt = product.name || "صورة المنتج";
-          image.loading = "lazy";
-          image.onerror = () => {
-            image.style.display = "none";
-            imageWrap.textContent = "تعذر تحميل الصورة";
-          };
-          imageWrap.appendChild(image);
-        } else {
-          imageWrap.textContent = "لا توجد صورة";
-        }
-
-        const info = document.createElement("div");
-        info.className = "product-info";
-
-        const name = document.createElement("h3");
-        name.className = "product-title";
-        name.textContent = product.name || "منتج";
-
-        const price = document.createElement("div");
-        price.className = "product-price";
-        price.textContent = formatPrice(product.price);
-
-        const category = document.createElement("div");
-        category.className = "product-category";
-        category.textContent = categoryName(product.category_id);
-
-        info.append(name, price, category);
-        card.append(imageWrap, info);
-
-        card.addEventListener("click", () => openProductDetail(product.id));
-        card.addEventListener("keydown", event => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            openProductDetail(product.id);
-          }
-        });
-
-        if (isAdmin) {
-          const actions = document.createElement("div");
-          actions.className = "admin-product-actions";
-
-          const editBtn = document.createElement("button");
-          editBtn.type = "button";
-          editBtn.className = "btn btn-secondary btn-small";
-          editBtn.textContent = "تعديل";
-          editBtn.onclick = event => {
-            event.stopPropagation();
-            startProductEdit(product);
-          };
-
-          const deleteBtn = document.createElement("button");
-          deleteBtn.type = "button";
-          deleteBtn.className = "btn btn-danger btn-small";
-          deleteBtn.textContent = "حذف";
-          deleteBtn.onclick = event => {
-            event.stopPropagation();
-            deleteProduct(product);
-          };
-
-          actions.append(editBtn, deleteBtn);
-          card.appendChild(actions);
-        }
-
-        grid.appendChild(card);
-      });
-    }
-
-    function openProductDetail(productId) {
-      const product = products.find(
-        item => String(item.id) === String(productId)
-      );
-      if (!product) return;
-
-      currentDetailProductId = product.id;
-      $("catalogSection").classList.add("hidden");
-      $("detailSection").classList.remove("hidden");
-      renderProductDetail(product);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    function renderProductDetail(product) {
-      const detail = $("detailContent");
-      const imageHTML = product.image_url
-        ? `<img class="detail-image" src="${escapeHTML(product.image_url)}"
-                alt="${escapeHTML(product.name)}">`
-        : `<div>لا توجد صورة لهذا المنتج</div>`;
-
-      const message =
-        "السلام عليكم، أنا مهتم/ة بمنتج: " +
-        (product.name || "") +
-        "، والسعر: " + formatPrice(product.price) +
-        ". هل المنتج متاح؟";
-
-      const encodedMessage = encodeURIComponent(message);
-      const mahmoudURL =
-        "https://wa.me/201113382703?text=" + encodedMessage;
-      const omJannahURL =
-        "https://wa.me/201030284960?text=" + encodedMessage;
-
-      detail.innerHTML = `
-        <div class="detail-image-wrap">${imageHTML}</div>
-        <h2>${escapeHTML(product.name || "تفاصيل المنتج")}</h2>
-        <div class="detail-price">${escapeHTML(formatPrice(product.price))}</div>
-        <div class="detail-meta">
-          <strong>القسم:</strong>
-          ${escapeHTML(categoryName(product.category_id))}
-        </div>
-        <div class="detail-meta">
-          <strong>الوصف:</strong>
-          <div class="detail-description">${
-            escapeHTML(product.description || "لا يوجد وصف مضاف.")
-          }</div>
-        </div>
-        <div class="detail-meta">
-          <strong>الألوان المتاحة:</strong>
-          ${escapeHTML(product.colors || "يرجى الاستفسار عن الألوان")}
-        </div>
-        <div class="detail-meta">
-          <strong>المقاسات المتاحة:</strong>
-          ${escapeHTML(product.sizes || "يرجى الاستفسار عن المقاسات")}
-        </div>
-        <h3 style="margin-top:18px">للطلب والاستفسار عبر واتساب</h3>
-        <div class="whatsapp-buttons">
-          <a class="btn-whatsapp" href="${mahmoudURL}"
-             target="_blank" rel="noopener noreferrer">
-            ☎️ واتساب محمود
-          </a>
-          <a class="btn-whatsapp" href="${omJannahURL}"
-             target="_blank" rel="noopener noreferrer">
-            ☎️ واتساب أم جنه
-          </a>
-        </div>
-      `;
-
-      if (isAdmin) {
-        const adminActions = document.createElement("div");
-        adminActions.className = "row";
-        adminActions.style.marginTop = "15px";
-
-        const editBtn = document.createElement("button");
-        editBtn.type = "button";
-        editBtn.className = "btn";
-        editBtn.textContent = "تعديل المنتج";
-        editBtn.onclick = () => startProductEdit(product);
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.type = "button";
-        deleteBtn.className = "btn btn-danger";
-        deleteBtn.textContent = "حذف المنتج";
-        deleteBtn.onclick = () => deleteProduct(product);
-
-        adminActions.append(editBtn, deleteBtn);
-        detail.appendChild(adminActions);
-      }
-    }
-
-    function closeProductDetail() {
-      currentDetailProductId = null;
-      $("detailSection").classList.add("hidden");
-      $("catalogSection").classList.remove("hidden");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    $("backBtn").addEventListener("click", closeProductDetail);
-
-    $("searchInput").addEventListener("input", renderProducts);
-
-    $("loginForm").addEventListener("submit", async event => {
-      event.preventDefault();
-      hideStatus("loginStatus");
-
-      const email = $("email").value.trim();
-      const password = $("password").value;
-
-      try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (error) throw error;
-
-        currentUser = data.user;
-        isAdmin = !!currentUser && currentUser.id === ADMIN_UID;
-
-        if (!isAdmin) {
-          await supabaseClient.auth.signOut();
-          currentUser = null;
-          isAdmin = false;
-          setLoggedInUI();
-          showStatus(
-            "loginStatus",
-            "هذا الحساب غير مصرح له بدخول لوحة الإدارة.",
-            true
-          );
-          return;
-        }
-
-        setLoggedInUI();
-        renderCategories();
-        renderProducts();
-        showStatus("loginStatus", "تم تسجيل الدخول بنجاح.");
-        await refreshAll();
-      } catch (error) {
-        showStatus(
-          "loginStatus",
-          "تعذر تسجيل الدخول: " + (error.message || "خطأ غير معروف"),
-          true
-        );
-      }
-    });
-
-    $("logoutBtn").addEventListener("click", async () => {
-      await supabaseClient.auth.signOut();
-      currentUser = null;
-      isAdmin = false;
-      setLoggedInUI();
-      renderCategories();
-      renderProducts();
-      resetProductForm();
-      resetCategoryForm();
-    });
-
-    supabaseClient.auth.onAuthStateChange((_event, session) => {
-      currentUser = session?.user || null;
-      isAdmin = !!currentUser && currentUser.id === ADMIN_UID;
-      setLoggedInUI();
-      renderCategories();
-      renderProducts();
-    });
-
-    $("categoryForm").addEventListener("submit", async event => {
-      event.preventDefault();
-      if (!requireAdmin()) return;
-
-      const name = $("categoryName").value.trim();
-      if (!name) return;
-
-      try {
-        if (editingCategoryId !== null) {
-          const { error } = await supabaseClient
-            .from("categories")
-            .update({ name })
-            .eq("id", editingCategoryId);
-
-          if (error) throw error;
-          showStatus("categoryStatus", "تم تعديل القسم بنجاح.");
-        } else {
-          const { error } = await supabaseClient
-            .from("categories")
-            .insert({ name });
-
-          if (error) throw error;
-          showStatus("categoryStatus", "تمت إضافة القسم بنجاح.");
-        }
-
-        resetCategoryForm();
-        await loadCategories();
-        renderProducts();
-      } catch (error) {
-        showStatus(
-          "categoryStatus",
-          "تعذر حفظ القسم: " + error.message,
-          true
-        );
-      }
-    });
-
-    function startCategoryEdit(category) {
-      if (!requireAdmin()) return;
-
-      editingCategoryId = category.id;
-      $("categoryName").value = category.name;
-      $("categoryForm").querySelector('button[type="submit"]').textContent =
-        "حفظ تعديل القسم";
-      $("cancelCategoryEdit").classList.remove("hidden");
-      $("categoryName").focus();
-      $("categoryForm").scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-
-    function resetCategoryForm() {
-      editingCategoryId = null;
-      $("categoryForm").reset();
-      $("categoryForm").querySelector('button[type="submit"]').textContent =
-        "إضافة قسم";
-      $("cancelCategoryEdit").classList.add("hidden");
-    }
-
-    $("cancelCategoryEdit").addEventListener("click", resetCategoryForm);
-
-    async function deleteCategory(category) {
-      if (!requireAdmin()) return;
-
-      const assignedProducts = products.filter(
-        product => String(product.category_id) === String(category.id)
-      );
-
-      if (assignedProducts.length > 0) {
-        alert(
-          `لا يمكن حذف قسم "${category.name}" لأنه يحتوي على ` +
-          `${assignedProducts.length} منتج.\n\n` +
-          "انقل المنتجات إلى قسم آخر أو احذفها أولاً، ثم حاول مرة أخرى."
-        );
-        return;
-      }
-
-      if (!confirm(
-        `هل أنت متأكد من حذف القسم "${category.name}"؟\n` +
-        "لا يمكن التراجع عن هذا الإجراء."
-      )) return;
-
-      try {
-        const { error } = await supabaseClient
-          .from("categories")
-          .delete()
-          .eq("id", category.id);
-
-        if (error) throw error;
-
-        if (String(selectedCategory) === String(category.id)) {
-          selectedCategory = "all";
-        }
-
-        if (String(editingCategoryId) === String(category.id)) {
-          resetCategoryForm();
-        }
-
-        await loadCategories();
-        await loadProducts();
-        showStatus("categoryStatus", "تم حذف القسم بنجاح.");
-      } catch (error) {
-        showStatus(
-          "categoryStatus",
-          "تعذر حذف القسم: " + error.message,
-          true
-        );
-      }
-    }
-
-    $("productForm").addEventListener("submit", async event => {
-      event.preventDefault();
-      if (!requireAdmin()) return;
-
-      const name = $("productName").value.trim();
-      const price = Number($("productPrice").value);
-      const categoryId = $("productCategory").value;
-      const description = $("productDescription").value.trim();
-      const colors = $("productColors").value.trim();
-      const sizes = $("productSizes").value.trim();
-      const imageFile = $("productImage").files[0];
-
-      if (!name || !categoryId || !Number.isFinite(price) || price < 0) {
-        showStatus("productStatus", "راجع اسم المنتج والسعر والقسم.", true);
-        return;
-      }
-
-      const saveButton = $("saveProductBtn");
-      saveButton.disabled = true;
-      saveButton.textContent = "جارٍ الحفظ...";
-
-      try {
-        let imageUrl = null;
-
-        if (editingProductId !== null) {
-          const existing = products.find(
-            item => String(item.id) === String(editingProductId)
-          );
-          imageUrl = existing?.image_url || null;
-        }
-
-        if (imageFile) {
-          if (!imageFile.type.startsWith("image/")) {
-            throw new Error("الملف المختار ليس صورة.");
-          }
-
-          const safeName = imageFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-          const filePath = Date.now() + "_" + safeName;
-
-          const { error: uploadError } = await supabaseClient
-            .storage
-            .from("product-images")
-            .upload(filePath, imageFile, {
-              cacheControl: "3600",
-              upsert: false
-            });
-
-          if (uploadError) throw uploadError;
-
-          const { data: publicData } = supabaseClient
-            .storage
-            .from("product-images")
-            .getPublicUrl(filePath);
-
-          imageUrl = publicData.publicUrl;
-        }
-
-        const productData = {
-          name,
-          price,
-          category_id: categoryId,
-          description,
-          colors,
-          sizes,
-          image_url: imageUrl
-        };
-
-        let result;
-
-        if (editingProductId !== null) {
-          result = await supabaseClient
-            .from("products")
-            .update(productData)
-            .eq("id", editingProductId);
-        } else {
-          result = await supabaseClient
-            .from("products")
-            .insert(productData);
-        }
-
-        if (result.error) throw result.error;
-
-        showStatus(
-          "productStatus",
-          editingProductId !== null
-            ? "تم تعديل المنتج بنجاح."
-            : "تمت إضافة المنتج بنجاح."
-        );
-
-        resetProductForm();
-        await loadProducts();
-      } catch (error) {
-        let message = error.message || "خطأ غير معروف";
-
-        if (/colors|sizes|column/i.test(message)) {
-          message +=
-            " — تأكد من إضافة حقلي colors وsizes في جدول products من Supabase.";
-        }
-
-        showStatus("productStatus", "تعذر حفظ المنتج: " + message, true);
-      } finally {
-        saveButton.disabled = false;
-        saveButton.textContent = "حفظ المنتج";
-      }
-    });
-
-    function startProductEdit(product) {
-      if (!requireAdmin()) return;
-
-      editingProductId = product.id;
-      $("productName").value = product.name || "";
-      $("productPrice").value = product.price ?? "";
-      $("productCategory").value = product.category_id ?? "";
-      $("productDescription").value = product.description || "";
-      $("productColors").value = product.colors || "";
-      $("productSizes").value = product.sizes || "";
-      $("productImage").value = "";
-
-      $("productFormTitle").textContent = "تعديل المنتج";
-      $("saveProductBtn").textContent = "حفظ التعديلات";
-      $("cancelProductEdit").classList.remove("hidden");
-      $("imageHelp").textContent =
-        "لو لم تختَر صورة جديدة، ستظل الصورة الحالية كما هي.";
-
-      $("adminPanel").classList.remove("hidden");
-      $("productForm").scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-
-    function resetProductForm() {
-      editingProductId = null;
-      $("productForm").reset();
-      $("productFormTitle").textContent = "إضافة منتج جديد";
-      $("saveProductBtn").textContent = "حفظ المنتج";
-      $("cancelProductEdit").classList.add("hidden");
-      $("imageHelp").textContent = "اختَر صورة واضحة للمنتج.";
-    }
-
-    $("cancelProductEdit").addEventListener("click", resetProductForm);
-
-    async function deleteProduct(product) {
-      if (!requireAdmin()) return;
-
-      if (!confirm(
-        `هل أنت متأكد من حذف المنتج "${product.name}"؟\n` +
-        "سيتم حذف بيانات المنتج من الكتالوج، ولا يمكن التراجع عن ذلك."
-      )) return;
-
-      try {
-        const { error } = await supabaseClient
-          .from("products")
-          .delete()
-          .eq("id", product.id);
-
-        if (error) throw error;
-
-        if (String(editingProductId) === String(product.id)) {
-          resetProductForm();
-        }
-
-        if (String(currentDetailProductId) === String(product.id)) {
-          closeProductDetail();
-        }
-
-        await loadProducts();
-        showStatus("catalogStatus", "تم حذف المنتج بنجاح.");
-      } catch (error) {
-        showStatus(
-          "catalogStatus",
-          "تعذر حذف المنتج: " + error.message,
-          true
-        );
-      }
-    }
-
-    // تحميل حالة الجلسة والبيانات عند فتح الصفحة
-    async function initializeApp() {
-      try {
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (error) throw error;
-
-        currentUser = data.session?.user || null;
-        isAdmin = !!currentUser && currentUser.id === ADMIN_UID;
-        setLoggedInUI();
-
-        await refreshAll();
-      } catch (error) {
-        showStatus(
-          "catalogStatus",
-          "تعذر الاتصال بقاعدة البيانات: " + error.message,
-          true
-        );
-      }
-    }
-
-    initializeApp();
-  </script>
-</body>
+<!DOCTYPE html>  <html lang="ar" dir="rtl">  
+<head>  
+  <meta charset="UTF-8">  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+  <meta name="theme-color" content="#166534">  
+  <meta name="description" content="كتالوج منتجات وأسعار محل هوس البنات">  
+  <meta name="application-name" content="محل هوس البنات">  
+  <title>محل هوس البنات</title>    <link rel="manifest" href="./manifest.json">    <style>  
+    :root {  
+      --green: #166534;  
+      --green-dark: #14532d;  
+      --green-light: #dcfce7;  
+      --bg: #f3f7f3;  
+      --white: #ffffff;  
+      --text: #172017;  
+      --muted: #667366;  
+      --danger: #dc2626;  
+      --border: #e2e8e2;  
+      --radius: 14px;  
+    }  
+  
+    * {  
+      box-sizing: border-box;  
+    }  
+  
+    body {  
+      margin: 0;  
+      background: var(--bg);  
+      color: var(--text);  
+      font-family: Tahoma, Arial, sans-serif;  
+      line-height: 1.6;  
+    }  
+  
+    button, input, textarea, select {  
+      font: inherit;  
+    }  
+  
+    button {  
+      cursor: pointer;  
+    }  
+  
+    button:disabled {  
+      opacity: .6;  
+      cursor: not-allowed;  
+    }  
+  
+    header {  
+      background: var(--green);  
+      color: white;  
+      padding: 18px 14px;  
+      text-align: center;  
+    }  
+  
+    header h1 {  
+      margin: 0;  
+      font-size: 25px;  
+    }  
+  
+    header p {  
+      margin: 5px 0 0;  
+      font-size: 14px;  
+      opacity: .92;  
+    }  
+  
+    .container {  
+      width: min(1100px, 100%);  
+      margin: auto;  
+      padding: 14px;  
+    }  
+  
+    .panel {  
+      background: var(--white);  
+      border: 1px solid var(--border);  
+      border-radius: var(--radius);  
+      padding: 14px;  
+      margin-bottom: 16px;  
+      box-shadow: 0 2px 8px #00000008;  
+    }  
+  
+    h2 {  
+      margin: 0 0 12px;  
+      font-size: 20px;  
+    }  
+  
+    h3 {  
+      margin: 0 0 10px;  
+      font-size: 17px;  
+    }  
+  
+    .row {  
+      display: flex;  
+      flex-wrap: wrap;  
+      gap: 9px;  
+      align-items: center;  
+    }  
+  
+    .field {  
+      margin-bottom: 12px;  
+    }  
+  
+    label {  
+      display: block;  
+      font-weight: bold;  
+      font-size: 14px;  
+      margin-bottom: 5px;  
+    }  
+  
+    input, textarea, select {  
+      width: 100%;  
+      padding: 11px;  
+      border: 1px solid #cbd5cb;  
+      border-radius: 9px;  
+      background: white;  
+      color: var(--text);  
+      outline-color: var(--green);  
+    }  
+  
+    textarea {  
+      min-height: 85px;  
+      resize: vertical;  
+    }  
+  
+    .btn {  
+      border: 0;  
+      border-radius: 9px;  
+      padding: 10px 13px;  
+      background: var(--green);  
+      color: white;  
+      font-weight: bold;  
+    }  
+  
+    .btn:hover {  
+      filter: brightness(.95);  
+    }  
+  
+    .btn-secondary {  
+      background: #e5e7eb;  
+      color: #222;  
+    }  
+  
+    .btn-danger {  
+      background: var(--danger);  
+      color: white;  
+    }  
+  
+    .btn-whatsapp {  
+      background: #128c4a;  
+      color: white;  
+      text-decoration: none;  
+      display: inline-flex;  
+      align-items: center;  
+      justify-content: center;  
+      text-align: center;  
+      gap: 6px;  
+      border-radius: 10px;  
+      padding: 12px 10px;  
+      font-weight: bold;  
+    }  
+  
+    .btn-small {  
+      padding: 7px 9px;  
+      font-size: 13px;  
+    }  
+  
+    .hidden {  
+      display: none !important;  
+    }  
+  
+    .status {  
+      margin: 10px 0;  
+      padding: 10px;  
+      border-radius: 9px;  
+      background: #f0fdf4;  
+      color: var(--green-dark);  
+      overflow-wrap: anywhere;  
+    }  
+  
+    .status.error {  
+      background: #fef2f2;  
+      color: #991b1b;  
+    }  
+  
+    .categories {  
+      display: flex;  
+      flex-wrap: wrap;  
+      gap: 8px;  
+      margin: 10px 0 16px;  
+    }  
+  
+    .category-chip {  
+      background: white;  
+      border: 1px solid var(--border);  
+      border-radius: 10px;  
+      padding: 8px 10px;  
+      display: flex;  
+      align-items: center;  
+      gap: 7px;  
+      max-width: 100%;  
+    }  
+  
+    .category-chip.active {  
+      background: var(--green-light);  
+      border-color: var(--green);  
+    }  
+  
+    .category-name {  
+      border: 0;  
+      background: transparent;  
+      padding: 0;  
+      color: inherit;  
+      font-weight: bold;  
+      overflow-wrap: anywhere;  
+    }  
+  
+    .category-actions {  
+      display: flex;  
+      gap: 4px;  
+    }  
+  
+    .category-actions button {  
+      padding: 4px 7px;  
+      font-size: 12px;  
+    }  
+  
+    .products-grid {  
+      display: grid;  
+      grid-template-columns: repeat(3, minmax(0, 1fr));  
+      gap: 12px;  
+    }  
+  
+    .product-card {  
+      background: white;  
+      border: 1px solid var(--border);  
+      border-radius: var(--radius);  
+      overflow: hidden;  
+      min-width: 0;  
+      cursor: pointer;  
+      transition: transform .15s, box-shadow .15s;  
+    }  
+  
+    .product-card:hover {  
+      transform: translateY(-2px);  
+      box-shadow: 0 4px 14px #00000010;  
+    }  
+  
+    .product-image-wrap {  
+      width: 100%;  
+      aspect-ratio: 1 / 1;  
+      background: #fff;  
+      display: flex;  
+      align-items: center;  
+      justify-content: center;  
+      padding: 5px;  
+    }  
+  
+    .product-image {  
+      width: 100%;  
+      height: 100%;  
+      object-fit: contain;  
+      display: block;  
+    }  
+  
+    .product-info {  
+      padding: 10px;  
+    }  
+  
+    .product-title {  
+      margin: 0 0 6px;  
+      font-size: 15px;  
+      overflow-wrap: anywhere;  
+    }  
+  
+    .product-price {  
+      font-weight: bold;  
+      color: var(--green);  
+      font-size: 17px;  
+    }  
+  
+    .product-category {  
+      color: var(--muted);  
+      font-size: 12px;  
+      margin-top: 3px;  
+    }  
+  
+    .admin-product-actions {  
+      display: flex;  
+      gap: 5px;  
+      padding: 0 8px 9px;  
+    }  
+  
+    .admin-product-actions button {  
+      flex: 1;  
+      min-width: 0;  
+    }  
+  
+    .empty {  
+      text-align: center;  
+      padding: 25px 10px;  
+      color: var(--muted);  
+      background: white;  
+      border-radius: var(--radius);  
+    }  
+  
+    .detail-image-wrap {  
+      width: 100%;  
+      height: min(55vh, 440px);  
+      min-height: 230px;  
+      background: white;  
+      display: flex;  
+      justify-content: center;  
+      align-items: center;  
+      border: 1px solid var(--border);  
+      border-radius: 12px;  
+      overflow: hidden;  
+      margin: 12px 0;  
+    }  
+  
+    .detail-image {  
+      width: 100%;  
+      height: 100%;  
+      object-fit: contain;  
+    }  
+  
+    .detail-price {  
+      color: var(--green);  
+      font-size: 24px;  
+      font-weight: bold;  
+      margin: 8px 0;  
+    }  
+  
+    .detail-description {  
+      white-space: pre-wrap;  
+      overflow-wrap: anywhere;  
+    }  
+  
+    .detail-meta {  
+      background: #f8faf8;  
+      border-radius: 10px;  
+      padding: 10px;  
+      margin: 8px 0;  
+      overflow-wrap: anywhere;  
+    }  
+  
+    .whatsapp-buttons {  
+      display: grid;  
+      grid-template-columns: 1fr 1fr;  
+      gap: 9px;  
+      margin-top: 16px;  
+    }  
+  
+    footer {  
+      text-align: center;  
+      color: var(--muted);  
+      padding: 20px 10px;  
+      font-size: 12px;  
+    }  
+  
+    @media (max-width: 600px) {  
+      .container {  
+        padding: 10px;  
+      }  
+  
+      header h1 {  
+        font-size: 22px;  
+      }  
+  
+      .products-grid {  
+        grid-template-columns: repeat(2, minmax(0, 1fr));  
+        gap: 8px;  
+      }  
+  
+      .product-info {  
+        padding: 8px;  
+      }  
+  
+      .product-title {  
+        font-size: 13px;  
+      }  
+  
+      .product-price {  
+        font-size: 15px;  
+      }  
+  
+      .admin-product-actions {  
+        padding: 0 5px 7px;  
+        gap: 4px;  
+      }  
+  
+      .admin-product-actions button {  
+        padding: 7px 4px;  
+        font-size: 11px;  
+      }  
+  
+      .whatsapp-buttons {  
+        grid-template-columns: 1fr;  
+      }  
+  
+      .category-chip {  
+        gap: 5px;  
+        padding: 7px;  
+      }  
+  
+      .category-actions button {  
+        padding: 5px;  
+      }  
+    }  
+  </style>  </head>  <body>  
+  <header>  
+    <h1>🌸 محل هوس البنات 🌸</h1>  
+    <p>كتالوج المنتجات والأسعار</p>  
+  </header>    <main class="container">  
+    <section id="loginPanel" class="panel">  
+      <h2>دخول الإدارة</h2>  
+      <p>تسجيل الدخول مطلوب لإضافة المنتجات وتعديلها وإدارة الأقسام.</p>  <form id="loginForm">  
+    <div class="field">  
+      <label for="email">البريد الإلكتروني</label>  
+      <input id="email" type="email" autocomplete="username"  
+             required placeholder="البريد الإلكتروني">  
+    </div>  
+
+    <div class="field">  
+      <label for="password">كلمة المرور</label>  
+      <input id="password" type="password" autocomplete="current-password"  
+             required placeholder="كلمة المرور">  
+    </div>  
+
+    <button class="btn" type="submit">تسجيل الدخول</button>  
+  </form>  
+
+  <div id="loginStatus" class="status hidden"></div>  
+</section>  
+
+<section id="adminPanel" class="panel hidden">  
+  <div class="row" style="justify-content:space-between">  
+    <h2>لوحة الإدارة</h2>  
+    <button id="logoutBtn" class="btn btn-secondary" type="button">  
+      تسجيل الخروج  
+    </button>  
+  </div>  
+
+  <h3>إدارة الأقسام</h3>  
+
+  <form id="categoryForm">  
+    <div class="field">  
+      <label for="categoryName">اسم القسم الجديد</label>  
+      <input id="categoryName" required maxlength="100"  
+             placeholder="مثال: ملابس، إكسسوارات">  
+    </div>  
+    <button class="btn" type="submit">إضافة قسم</button>  
+    <button id="cancelCategoryEdit" class="btn btn-secondary hidden"  
+            type="button">إلغاء التعديل</button>  
+  </form>  
+
+  <div id="categoryStatus" class="status hidden"></div>  
+
+  <hr style="border:0;border-top:1px solid var(--border);margin:18px 0">  
+
+  <h3 id="productFormTitle">إضافة منتج جديد</h3>  
+
+  <form id="productForm">  
+    <div class="field">  
+      <label for="productName">اسم المنتج</label>  
+      <input id="productName" required maxlength="200"  
+             placeholder="اسم المنتج">  
+    </div>  
+
+    <div class="field">  
+      <label for="productPrice">السعر بالجنيه</label>  
+      <input id="productPrice" type="number" min="0" step="0.01"  
+             required placeholder="السعر">  
+    </div>  
+
+    <div class="field">  
+      <label for="productCategory">القسم</label>  
+      <select id="productCategory" required>  
+        <option value="">اختر القسم</option>  
+      </select>  
+    </div>  
+
+    <div class="field">  
+      <label for="productDescription">وصف المنتج</label>  
+      <textarea id="productDescription"  
+                placeholder="تفاصيل المنتج"></textarea>  
+    </div>  
+
+    <div class="field">  
+      <label for="productColors">الألوان المتاحة</label>  
+      <input id="productColors" placeholder="مثال: أسود، أبيض، بيج">  
+      <small>اكتب الألوان وافصل بينها بفاصلة.</small>  
+    </div>  
+
+    <div class="field">  
+      <label for="productSizes">المقاسات المتاحة</label>  
+      <input id="productSizes" placeholder="مثال: S، M، L، XL">  
+      <small>اكتب المقاسات وافصل بينها بفاصلة.</small>  
+    </div>  
+
+    <div class="field">  
+      <label for="productImage">صورة المنتج</label>  
+      <input id="productImage" type="file" accept="image/*">  
+      <small id="imageHelp">اختَر صورة واضحة للمنتج.</small>  
+    </div>  
+
+    <button id="saveProductBtn" class="btn" type="submit">  
+      حفظ المنتج  
+    </button>  
+    <button id="cancelProductEdit" class="btn btn-secondary hidden"  
+            type="button">إلغاء التعديل</button>  
+  </form>  
+
+  <div id="productStatus" class="status hidden"></div>  
+</section>  
+
+<section id="catalogSection">  
+  <div class="panel">  
+    <h2>🛍️ منتجات المحل</h2>  
+
+    <div class="field">  
+      <label for="searchInput">البحث عن منتج</label>  
+      <input id="searchInput" type="search"  
+             placeholder="اكتب اسم المنتج أو وصفه...">  
+    </div>  
+
+    <div id="categories" class="categories"></div>  
+  </div>  
+
+  <div id="catalogStatus" class="status hidden"></div>  
+  <div id="productsGrid" class="products-grid"></div>  
+  <div id="emptyState" class="empty hidden">لا توجد منتجات لعرضها.</div>  
+</section>  
+
+<section id="detailSection" class="panel hidden">  
+  <button id="backBtn" class="btn btn-secondary" type="button">  
+    ← الرجوع للمنتجات  
+  </button>  
+
+  <div id="detailContent"></div>  
+</section>
+
+  </main>    <footer>  
+    محل هوس البنات — أهلاً وسهلاً بكم 🌸  
+  </footer>    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>    <script>  
+    // إعدادات Supabase  
+    const SUPABASE_URL = "https://sovxdgvrwbohhyuhktnp.supabase.co";  
+    const SUPABASE_KEY = "sb_publishable_itvtDhJzdXH1X3GUoshKkg_neEvjG3i";  
+  
+    // حساب الإدارة المسموح له بتعديل الواجهة  
+    const ADMIN_UID = "8b129621-d7d7-4dd7-9b92-eb624658fcb7";  
+  
+    const supabaseClient = window.supabase.createClient(  
+      SUPABASE_URL,  
+      SUPABASE_KEY  
+    );  
+  
+    let currentUser = null;  
+    let isAdmin = false;  
+    let products = [];  
+    let categories = [];  
+    let selectedCategory = "all";  
+    let editingProductId = null;  
+    let editingCategoryId = null;  
+    let currentDetailProductId = null;  
+  
+    const $ = id => document.getElementById(id);  
+  
+    function showStatus(id, message, error = false) {  
+      const el = $(id);  
+      el.textContent = message;  
+      el.classList.remove("hidden", "error");  
+      if (error) el.classList.add("error");  
+    }  
+  
+    function hideStatus(id) {  
+      $(id).classList.add("hidden");  
+    }  
+  
+    function escapeHTML(value) {  
+      return String(value ?? "").replace(/[&<>"']/g, char => ({  
+        "&": "&amp;",  
+        "<": "&lt;",  
+        ">": "&gt;",  
+        '"': "&quot;",  
+        "'": "&#39;"  
+      })[char]);  
+    }  
+  
+    function formatPrice(value) {  
+      const number = Number(value);  
+      if (!Number.isFinite(number)) return "السعر غير محدد";  
+      return number.toLocaleString("ar-EG", {  
+        maximumFractionDigits: 2  
+      }) + " جنيه";  
+    }  
+  
+    function categoryName(categoryId) {  
+      const category = categories.find(  
+        item => String(item.id) === String(categoryId)  
+      );  
+      return category ? category.name : "بدون قسم";  
+    }  
+  
+    function requireAdmin() {  
+      if (!isAdmin || !currentUser || currentUser.id !== ADMIN_UID) {  
+        alert("هذه العملية متاحة للإدارة فقط.");  
+        return false;  
+      }  
+      return true;  
+    }  
+  
+    function setLoggedInUI() {  
+      $("loginPanel").classList.toggle("hidden", isAdmin);  
+      $("adminPanel").classList.toggle("hidden", !isAdmin);  
+    }  
+  
+    async function loadCategories() {  
+      const { data, error } = await supabaseClient  
+        .from("categories")  
+        .select("*")  
+        .order("id", { ascending: true });  
+  
+      if (error) throw error;  
+  
+      categories = data || [];  
+      renderCategories();  
+      populateCategorySelect();  
+    }  
+  
+    async function loadProducts() {  
+      const { data, error } = await supabaseClient  
+        .from("products")  
+        .select("*")  
+        .order("id", { ascending: false });  
+  
+      if (error) {  
+        if (/colors|sizes|column/i.test(error.message || "")) {  
+          throw new Error(  
+            "تعذر قراءة المنتجات. تأكد من تنفيذ أمر SQL لإضافة حقلي colors وsizes."  
+          );  
+        }  
+        throw error;  
+      }  
+  
+      products = data || [];  
+      renderProducts();  
+  
+      if (currentDetailProductId !== null) {  
+        const product = products.find(  
+          item => String(item.id) === String(currentDetailProductId)  
+        );  
+        if (product) renderProductDetail(product);  
+        else closeProductDetail();  
+      }  
+    }  
+  
+    async function refreshAll() {  
+      try {  
+        showStatus("catalogStatus", "جارٍ تحميل المنتجات...");  
+        await loadCategories();  
+        await loadProducts();  
+        hideStatus("catalogStatus");  
+      } catch (error) {  
+        showStatus(  
+          "catalogStatus",  
+          "حدث خطأ أثناء تحميل البيانات: " + error.message,  
+          true  
+        );  
+      }  
+    }  
+  
+    function renderCategories() {  
+      const container = $("categories");  
+      container.innerHTML = "";  
+  
+      const allChip = document.createElement("div");  
+      allChip.className = "category-chip" +  
+        (selectedCategory === "all" ? " active" : "");  
+  
+      const allButton = document.createElement("button");  
+      allButton.type = "button";  
+      allButton.className = "category-name";  
+      allButton.textContent = "كل المنتجات";  
+      allButton.onclick = () => {  
+        selectedCategory = "all";  
+        renderCategories();  
+        renderProducts();  
+      };  
+  
+      allChip.appendChild(allButton);  
+      container.appendChild(allChip);  
+  
+      categories.forEach(category => {  
+        const chip = document.createElement("div");  
+        chip.className = "category-chip" +  
+          (String(selectedCategory) === String(category.id) ? " active" : "");  
+  
+        const nameButton = document.createElement("button");  
+        nameButton.type = "button";  
+        nameButton.className = "category-name";  
+        nameButton.textContent = category.name;  
+        nameButton.onclick = () => {  
+          selectedCategory = String(category.id);  
+          renderCategories();  
+          renderProducts();  
+        };  
+        chip.appendChild(nameButton);  
+  
+        if (isAdmin) {  
+          const actions = document.createElement("div");  
+          actions.className = "category-actions";  
+  
+          const editBtn = document.createElement("button");  
+          editBtn.type = "button";  
+          editBtn.className = "btn btn-secondary";  
+          editBtn.textContent = "✏️";  
+          editBtn.title = "تعديل القسم";  
+          editBtn.onclick = () => startCategoryEdit(category);  
+  
+          const deleteBtn = document.createElement("button");  
+          deleteBtn.type = "button";  
+          deleteBtn.className = "btn btn-danger";  
+          deleteBtn.textContent = "🗑️";  
+          deleteBtn.title = "حذف القسم";  
+          deleteBtn.onclick = () => deleteCategory(category);  
+  
+          actions.append(editBtn, deleteBtn);  
+          chip.appendChild(actions);  
+        }  
+  
+        container.appendChild(chip);  
+      });  
+    }  
+  
+    function populateCategorySelect() {  
+      const select = $("productCategory");  
+      const previousValue = select.value;  
+  
+      select.innerHTML = '<option value="">اختر القسم</option>';  
+  
+      categories.forEach(category => {  
+        const option = document.createElement("option");  
+        option.value = category.id;  
+        option.textContent = category.name;  
+        select.appendChild(option);  
+      });  
+  
+      if (categories.some(  
+        item => String(item.id) === String(previousValue)  
+      )) {  
+        select.value = previousValue;  
+      }  
+    }  
+  
+    function renderProducts() {  
+      const grid = $("productsGrid");  
+      const search = $("searchInput").value.trim().toLowerCase();  
+  
+      grid.innerHTML = "";  
+  
+      const filtered = products.filter(product => {  
+        const matchesCategory =  
+          selectedCategory === "all" ||  
+          String(product.category_id) === String(selectedCategory);  
+  
+        const searchable = [  
+          product.name,  
+          product.description,  
+          categoryName(product.category_id),  
+          product.colors,  
+          product.sizes  
+        ].join(" ").toLowerCase();  
+  
+        return matchesCategory && searchable.includes(search);  
+      });  
+  
+      $("emptyState").classList.toggle("hidden", filtered.length > 0);  
+  
+      filtered.forEach(product => {  
+        const card = document.createElement("article");  
+        card.className = "product-card";  
+        card.tabIndex = 0;  
+        card.setAttribute("role", "button");  
+        card.setAttribute("aria-label", "عرض تفاصيل " + product.name);  
+  
+        const imageWrap = document.createElement("div");  
+        imageWrap.className = "product-image-wrap";  
+  
+        if (product.image_url) {  
+          const image = document.createElement("img");  
+          image.className = "product-image";  
+          image.src = product.image_url;  
+          image.alt = product.name || "صورة المنتج";  
+          image.loading = "lazy";  
+          image.onerror = () => {  
+            image.style.display = "none";  
+            imageWrap.textContent = "تعذر تحميل الصورة";  
+          };  
+          imageWrap.appendChild(image);  
+        } else {  
+          imageWrap.textContent = "لا توجد صورة";  
+        }  
+  
+        const info = document.createElement("div");  
+        info.className = "product-info";  
+  
+        const name = document.createElement("h3");  
+        name.className = "product-title";  
+        name.textContent = product.name || "منتج";  
+  
+        const price = document.createElement("div");  
+        price.className = "product-price";  
+        price.textContent = formatPrice(product.price);  
+  
+        const category = document.createElement("div");  
+        category.className = "product-category";  
+        category.textContent = categoryName(product.category_id);  
+  
+        info.append(name, price, category);  
+        card.append(imageWrap, info);  
+  
+        card.addEventListener("click", () => openProductDetail(product.id));  
+        card.addEventListener("keydown", event => {  
+          if (event.key === "Enter" || event.key === " ") {  
+            event.preventDefault();  
+            openProductDetail(product.id);  
+          }  
+        });  
+  
+        if (isAdmin) {  
+          const actions = document.createElement("div");  
+          actions.className = "admin-product-actions";  
+  
+          const editBtn = document.createElement("button");  
+          editBtn.type = "button";  
+          editBtn.className = "btn btn-secondary btn-small";  
+          editBtn.textContent = "تعديل";  
+          editBtn.onclick = event => {  
+            event.stopPropagation();  
+            startProductEdit(product);  
+          };  
+  
+          const deleteBtn = document.createElement("button");  
+          deleteBtn.type = "button";  
+          deleteBtn.className = "btn btn-danger btn-small";  
+          deleteBtn.textContent = "حذف";  
+          deleteBtn.onclick = event => {  
+            event.stopPropagation();  
+            deleteProduct(product);  
+          };  
+  
+          actions.append(editBtn, deleteBtn);  
+          card.appendChild(actions);  
+        }  
+  
+        grid.appendChild(card);  
+      });  
+    }  
+  
+    function openProductDetail(productId) {  
+      const product = products.find(  
+        item => String(item.id) === String(productId)  
+      );  
+      if (!product) return;  
+  
+      currentDetailProductId = product.id;  
+      $("catalogSection").classList.add("hidden");  
+      $("detailSection").classList.remove("hidden");  
+      renderProductDetail(product);  
+      window.scrollTo({ top: 0, behavior: "smooth" });  
+    }  
+  
+    function renderProductDetail(product) {  
+      const detail = $("detailContent");  
+      const imageHTML = product.image_url  
+        ? `<img class="detail-image" src="${escapeHTML(product.image_url)}"  
+                alt="${escapeHTML(product.name)}">`  
+        : `<div>لا توجد صورة لهذا المنتج</div>`;  
+  
+      const message =  
+        "السلام عليكم، أنا مهتم/ة بمنتج: " +  
+        (product.name || "") +  
+        "، والسعر: " + formatPrice(product.price) +  
+        ". هل المنتج متاح؟";  
+  
+      const encodedMessage = encodeURIComponent(message);  
+      const mahmoudURL =  
+        "https://wa.me/201113382703?text=" + encodedMessage;  
+      const omJannahURL =  
+        "https://wa.me/201030284960?text=" + encodedMessage;  
+  
+      detail.innerHTML = `  
+        <div class="detail-image-wrap">${imageHTML}</div>  
+        <h2>${escapeHTML(product.name || "تفاصيل المنتج")}</h2>  
+        <div class="detail-price">${escapeHTML(formatPrice(product.price))}</div>  
+        <div class="detail-meta">  
+          <strong>القسم:</strong>  
+          ${escapeHTML(categoryName(product.category_id))}  
+        </div>  
+        <div class="detail-meta">  
+          <strong>الوصف:</strong>  
+          <div class="detail-description">${  
+            escapeHTML(product.description || "لا يوجد وصف مضاف.")  
+          }</div>  
+        </div>  
+        <div class="detail-meta">  
+          <strong>الألوان المتاحة:</strong>  
+          ${escapeHTML(product.colors || "يرجى الاستفسار عن الألوان")}  
+        </div>  
+        <div class="detail-meta">  
+          <strong>المقاسات المتاحة:</strong>  
+          ${escapeHTML(product.sizes || "يرجى الاستفسار عن المقاسات")}  
+        </div>  
+        <h3 style="margin-top:18px">للطلب والاستفسار عبر واتساب</h3>  
+        <div class="whatsapp-buttons">  
+          <a class="btn-whatsapp" href="${mahmoudURL}"  
+             target="_blank" rel="noopener noreferrer">  
+            ☎️ واتساب محمود  
+          </a>  
+          <a class="btn-whatsapp" href="${omJannahURL}"  
+             target="_blank" rel="noopener noreferrer">  
+            ☎️ واتساب أم جنه  
+          </a>  
+        </div>  
+      `;  
+  
+      if (isAdmin) {  
+        const adminActions = document.createElement("div");  
+        adminActions.className = "row";  
+        adminActions.style.marginTop = "15px";  
+  
+        const editBtn = document.createElement("button");  
+        editBtn.type = "button";  
+        editBtn.className = "btn";  
+        editBtn.textContent = "تعديل المنتج";  
+        editBtn.onclick = () => startProductEdit(product);  
+  
+        const deleteBtn = document.createElement("button");  
+        deleteBtn.type = "button";  
+        deleteBtn.className = "btn btn-danger";  
+        deleteBtn.textContent = "حذف المنتج";  
+        deleteBtn.onclick = () => deleteProduct(product);  
+  
+        adminActions.append(editBtn, deleteBtn);  
+        detail.appendChild(adminActions);  
+      }  
+    }  
+  
+    function closeProductDetail() {  
+      currentDetailProductId = null;  
+      $("detailSection").classList.add("hidden");  
+      $("catalogSection").classList.remove("hidden");  
+      window.scrollTo({ top: 0, behavior: "smooth" });  
+    }  
+  
+    $("backBtn").addEventListener("click", closeProductDetail);  
+  
+    $("searchInput").addEventListener("input", renderProducts);  
+  
+    $("loginForm").addEventListener("submit", async event => {  
+      event.preventDefault();  
+      hideStatus("loginStatus");  
+  
+      const email = $("email").value.trim();  
+      const password = $("password").value;  
+  
+      try {  
+        const { data, error } = await supabaseClient.auth.signInWithPassword({  
+          email,  
+          password  
+        });  
+  
+        if (error) throw error;  
+  
+        currentUser = data.user;  
+        isAdmin = !!currentUser && currentUser.id === ADMIN_UID;  
+  
+        if (!isAdmin) {  
+          await supabaseClient.auth.signOut();  
+          currentUser = null;  
+          isAdmin = false;  
+          setLoggedInUI();  
+          showStatus(  
+            "loginStatus",  
+            "هذا الحساب غير مصرح له بدخول لوحة الإدارة.",  
+            true  
+          );  
+          return;  
+        }  
+  
+        setLoggedInUI();  
+        renderCategories();  
+        renderProducts();  
+        showStatus("loginStatus", "تم تسجيل الدخول بنجاح.");  
+        await refreshAll();  
+      } catch (error) {  
+        showStatus(  
+          "loginStatus",  
+          "تعذر تسجيل الدخول: " + (error.message || "خطأ غير معروف"),  
+          true  
+        );  
+      }  
+    });  
+  
+    $("logoutBtn").addEventListener("click", async () => {  
+      await supabaseClient.auth.signOut();  
+      currentUser = null;  
+      isAdmin = false;  
+      setLoggedInUI();  
+      renderCategories();  
+      renderProducts();  
+      resetProductForm();  
+      resetCategoryForm();  
+    });  
+  
+    supabaseClient.auth.onAuthStateChange((_event, session) => {  
+      currentUser = session?.user || null;  
+      isAdmin = !!currentUser && currentUser.id === ADMIN_UID;  
+      setLoggedInUI();  
+      renderCategories();  
+      renderProducts();  
+    });  
+  
+    $("categoryForm").addEventListener("submit", async event => {  
+      event.preventDefault();  
+      if (!requireAdmin()) return;  
+  
+      const name = $("categoryName").value.trim();  
+      if (!name) return;  
+  
+      try {  
+        if (editingCategoryId !== null) {  
+          const { error } = await supabaseClient  
+            .from("categories")  
+            .update({ name })  
+            .eq("id", editingCategoryId);  
+  
+          if (error) throw error;  
+          showStatus("categoryStatus", "تم تعديل القسم بنجاح.");  
+        } else {  
+          const { error } = await supabaseClient  
+            .from("categories")  
+            .insert({ name });  
+  
+          if (error) throw error;  
+          showStatus("categoryStatus", "تمت إضافة القسم بنجاح.");  
+        }  
+  
+        resetCategoryForm();  
+        await loadCategories();  
+        renderProducts();  
+      } catch (error) {  
+        showStatus(  
+          "categoryStatus",  
+          "تعذر حفظ القسم: " + error.message,  
+          true  
+        );  
+      }  
+    });  
+  
+    function startCategoryEdit(category) {  
+      if (!requireAdmin()) return;  
+  
+      editingCategoryId = category.id;  
+      $("categoryName").value = category.name;  
+      $("categoryForm").querySelector('button[type="submit"]').textContent =  
+        "حفظ تعديل القسم";  
+      $("cancelCategoryEdit").classList.remove("hidden");  
+      $("categoryName").focus();  
+      $("categoryForm").scrollIntoView({ behavior: "smooth", block: "center" });  
+    }  
+  
+    function resetCategoryForm() {  
+      editingCategoryId = null;  
+      $("categoryForm").reset();  
+      $("categoryForm").querySelector('button[type="submit"]').textContent =  
+        "إضافة قسم";  
+      $("cancelCategoryEdit").classList.add("hidden");  
+    }  
+  
+    $("cancelCategoryEdit").addEventListener("click", resetCategoryForm);  
+  
+    async function deleteCategory(category) {  
+      if (!requireAdmin()) return;  
+  
+      const assignedProducts = products.filter(  
+        product => String(product.category_id) === String(category.id)  
+      );  
+  
+      if (assignedProducts.length > 0) {  
+        alert(  
+          `لا يمكن حذف قسم "${category.name}" لأنه يحتوي على ` +  
+          `${assignedProducts.length} منتج.\n\n` +  
+          "انقل المنتجات إلى قسم آخر أو احذفها أولاً، ثم حاول مرة أخرى."  
+        );  
+        return;  
+      }  
+  
+      if (!confirm(  
+        `هل أنت متأكد من حذف القسم "${category.name}"؟\n` +  
+        "لا يمكن التراجع عن هذا الإجراء."  
+      )) return;  
+  
+      try {  
+        const { error } = await supabaseClient  
+          .from("categories")  
+          .delete()  
+          .eq("id", category.id);  
+  
+        if (error) throw error;  
+  
+        if (String(selectedCategory) === String(category.id)) {  
+          selectedCategory = "all";  
+        }  
+  
+        if (String(editingCategoryId) === String(category.id)) {  
+          resetCategoryForm();  
+        }  
+  
+        await loadCategories();  
+        await loadProducts();  
+        showStatus("categoryStatus", "تم حذف القسم بنجاح.");  
+      } catch (error) {  
+        showStatus(  
+          "categoryStatus",  
+          "تعذر حذف القسم: " + error.message,  
+          true  
+        );  
+      }  
+    }  
+  
+    $("productForm").addEventListener("submit", async event => {  
+      event.preventDefault();  
+      if (!requireAdmin()) return;  
+  
+      const name = $("productName").value.trim();  
+      const price = Number($("productPrice").value);  
+      const categoryId = $("productCategory").value;  
+      const description = $("productDescription").value.trim();  
+      const colors = $("productColors").value.trim();  
+      const sizes = $("productSizes").value.trim();  
+      const imageFile = $("productImage").files[0];  
+  
+      if (!name || !categoryId || !Number.isFinite(price) || price < 0) {  
+        showStatus("productStatus", "راجع اسم المنتج والسعر والقسم.", true);  
+        return;  
+      }  
+  
+      const saveButton = $("saveProductBtn");  
+      saveButton.disabled = true;  
+      saveButton.textContent = "جارٍ الحفظ...";  
+  
+      try {  
+        let imageUrl = null;  
+  
+        if (editingProductId !== null) {  
+          const existing = products.find(  
+            item => String(item.id) === String(editingProductId)  
+          );  
+          imageUrl = existing?.image_url || null;  
+        }  
+  
+        if (imageFile) {  
+          if (!imageFile.type.startsWith("image/")) {  
+            throw new Error("الملف المختار ليس صورة.");  
+          }  
+  
+          const safeName = imageFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");  
+          const filePath = Date.now() + "_" + safeName;  
+  
+          const { error: uploadError } = await supabaseClient  
+            .storage  
+            .from("product-images")  
+            .upload(filePath, imageFile, {  
+              cacheControl: "3600",  
+              upsert: false  
+            });  
+  
+          if (uploadError) throw uploadError;  
+  
+          const { data: publicData } = supabaseClient  
+            .storage  
+            .from("product-images")  
+            .getPublicUrl(filePath);  
+  
+          imageUrl = publicData.publicUrl;  
+        }  
+  
+        const productData = {  
+          name,  
+          price,  
+          category_id: categoryId,  
+          description,  
+          colors,  
+          sizes,  
+          image_url: imageUrl  
+        };  
+  
+        let result;  
+  
+        if (editingProductId !== null) {  
+          result = await supabaseClient  
+            .from("products")  
+            .update(productData)  
+            .eq("id", editingProductId);  
+        } else {  
+          result = await supabaseClient  
+            .from("products")  
+            .insert(productData);  
+        }  
+  
+        if (result.error) throw result.error;  
+  
+        showStatus(  
+          "productStatus",  
+          editingProductId !== null  
+            ? "تم تعديل المنتج بنجاح."  
+            : "تمت إضافة المنتج بنجاح."  
+        );  
+  
+        resetProductForm();  
+        await loadProducts();  
+      } catch (error) {  
+        let message = error.message || "خطأ غير معروف";  
+  
+        if (/colors|sizes|column/i.test(message)) {  
+          message +=  
+            " — تأكد من إضافة حقلي colors وsizes في جدول products من Supabase.";  
+        }  
+  
+        showStatus("productStatus", "تعذر حفظ المنتج: " + message, true);  
+      } finally {  
+        saveButton.disabled = false;  
+        saveButton.textContent = "حفظ المنتج";  
+      }  
+    });  
+  
+    function startProductEdit(product) {  
+      if (!requireAdmin()) return;  
+  
+      editingProductId = product.id;  
+      $("productName").value = product.name || "";  
+      $("productPrice").value = product.price ?? "";  
+      $("productCategory").value = product.category_id ?? "";  
+      $("productDescription").value = product.description || "";  
+      $("productColors").value = product.colors || "";  
+      $("productSizes").value = product.sizes || "";  
+      $("productImage").value = "";  
+  
+      $("productFormTitle").textContent = "تعديل المنتج";  
+      $("saveProductBtn").textContent = "حفظ التعديلات";  
+      $("cancelProductEdit").classList.remove("hidden");  
+      $("imageHelp").textContent =  
+        "لو لم تختَر صورة جديدة، ستظل الصورة الحالية كما هي.";  
+  
+      $("adminPanel").classList.remove("hidden");  
+      $("productForm").scrollIntoView({  
+        behavior: "smooth",  
+        block: "start"  
+      });  
+    }  
+  
+    function resetProductForm() {  
+      editingProductId = null;  
+      $("productForm").reset();  
+      $("productFormTitle").textContent = "إضافة منتج جديد";  
+      $("saveProductBtn").textContent = "حفظ المنتج";  
+      $("cancelProductEdit").classList.add("hidden");  
+      $("imageHelp").textContent = "اختَر صورة واضحة للمنتج.";  
+    }  
+  
+    $("cancelProductEdit").addEventListener("click", resetProductForm);  
+  
+    async function deleteProduct(product) {  
+      if (!requireAdmin()) return;  
+  
+      if (!confirm(  
+        `هل أنت متأكد من حذف المنتج "${product.name}"؟\n` +  
+        "سيتم حذف بيانات المنتج من الكتالوج، ولا يمكن التراجع عن ذلك."  
+      )) return;  
+  
+      try {  
+        const { error } = await supabaseClient  
+          .from("products")  
+          .delete()  
+          .eq("id", product.id);  
+  
+        if (error) throw error;  
+  
+        if (String(editingProductId) === String(product.id)) {  
+          resetProductForm();  
+        }  
+  
+        if (String(currentDetailProductId) === String(product.id)) {  
+          closeProductDetail();  
+        }  
+  
+        await loadProducts();  
+        showStatus("catalogStatus", "تم حذف المنتج بنجاح.");  
+      } catch (error) {  
+        showStatus(  
+          "catalogStatus",  
+          "تعذر حذف المنتج: " + error.message,  
+          true  
+        );  
+      }  
+    }  
+  
+    // تحميل حالة الجلسة والبيانات عند فتح الصفحة  
+    async function initializeApp() {  
+      try {  
+        const { data, error } = await supabaseClient.auth.getSession();  
+        if (error) throw error;  
+  
+        currentUser = data.session?.user || null;  
+        isAdmin = !!currentUser && currentUser.id === ADMIN_UID;  
+        setLoggedInUI();  
+  
+        await refreshAll();  
+      } catch (error) {  
+        showStatus(  
+          "catalogStatus",  
+          "تعذر الاتصال بقاعدة البيانات: " + error.message,  
+          true  
+        );  
+      }  
+    }  
+  
+    initializeApp();  
+  </script>  </body>  
 </html>
-<script>
-(function () {
-  const originalOpen = openProductDetail;
-  const originalClose = closeProductDetail;
-
-  let closingByBack = false;
-
-  openProductDetail = function (productId) {
-    if (currentDetailProductId === null) {
-      history.pushState(
-        { productDetails: true },
-        "",
-        location.href
-      );
-    }
-
-    originalOpen(productId);
-  };
-
-  closeProductDetail = function (fromPopState = false) {
-    if (currentDetailProductId === null) return;
-
-    if (!fromPopState && !closingByBack) {
-      closingByBack = true;
-      history.back();
-      return;
-    }
-
-    closingByBack = false;
-    originalClose();
-  };
-
-  document.getElementById("backBtn").onclick = function () {
-    closeProductDetail();
-  };
-
-  window.addEventListener("popstate", function () {
-    if (currentDetailProductId !== null) {
-      closeProductDetail(true);
-    }
-  });
-})();
-</script>
