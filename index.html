@@ -1327,3 +1327,35 @@
     initializeApp();  
   </script>  </body>  
 </html>
+<script>
+(function () {
+  const catalog = document.getElementById("catalogSection");
+  const detail = document.getElementById("detailSection");
+  const backButton = document.getElementById("backBtn");
+
+  document.addEventListener("click", function (event) {
+    const card = event.target.closest(".product-card");
+
+    if (!card || event.target.closest("button")) return;
+    if (!detail.classList.contains("hidden")) return;
+
+    history.pushState(
+      { screen: "product-detail" },
+      "",
+      location.href
+    );
+  }, true);
+
+  window.addEventListener("popstate", function () {
+    if (!detail.classList.contains("hidden")) {
+      detail.classList.add("hidden");
+      catalog.classList.remove("hidden");
+      window.scrollTo(0, 0);
+    }
+  });
+
+  if (backButton) {
+    backButton.style.display = "none";
+  }
+})();
+</script>
