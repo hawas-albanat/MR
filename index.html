@@ -4,210 +4,313 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#166534">
+<meta name="description" content="دليل أسعار المحل">
+<link rel="manifest" href="./manifest.json">
 <title>دليل أسعار المحل</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+:root{--green:#166534;--light:#f3f7f3;--border:#e0e7e0}
 *{box-sizing:border-box}
-body{margin:0;background:#f3f5f7;color:#202820;font-family:Arial,sans-serif}
-header{background:#173c32;color:white;padding:24px 15px;text-align:center}
-header h1{margin:0 0 8px;font-size:26px}
-header p{margin:0;color:#dce9df}
-main{max-width:800px;margin:auto;padding:14px}
-.panel{background:white;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px #0000000b}
-h2{font-size:19px;margin:0 0 12px}
-input,select,textarea,button{width:100%;padding:12px;margin:5px 0;border:1px solid #d5dcd7;border-radius:9px;font:inherit}
-button{background:#173c32;color:white;border:0;cursor:pointer}
-.secondary{background:#e7eee9;color:#173c32}
-.danger{background:#a52a2a}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.product{padding:14px;border:1px solid #e1e7e3;border-radius:12px;margin:10px 0}
-.product h3{margin:0 0 8px}
-.price{font-size:23px;font-weight:bold;color:#147348}
-.small{font-size:14px;color:#68736c;margin-top:8px}
-.actions{display:flex;gap:8px}
-.actions button{flex:1}
-#status{font-size:14px;color:#68736c}
-.empty{text-align:center;padding:20px;color:#68736c}
-footer{text-align:center;padding:20px;color:#68736c;font-size:13px}
-@media(max-width:480px){.grid{grid-template-columns:1fr}}
+body{margin:0;background:var(--light);font-family:Arial,Tahoma,sans-serif;color:#17251b}
+header{background:var(--green);color:white;padding:22px 16px 28px}
+header h1{margin:0 0 7px;font-size:25px}
+header p{margin:0;color:#e3f4e5;font-size:14px}
+main{max-width:850px;margin:auto;padding:15px}
+.panel{background:white;border:1px solid var(--border);border-radius:15px;padding:15px;margin-bottom:15px}
+h2{font-size:18px;margin:0 0 13px}
+input,select,textarea,button{font:inherit}
+input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5cb;border-radius:10px;background:white;margin:5px 0 10px}
+button{border:0;border-radius:10px;padding:11px 14px;background:var(--green);color:white;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
+.secondary{background:#e8f2e9;color:#14532d}
+.danger{background:#fee2e2;color:#991b1b}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1}
+.row button{flex:0 0 auto}
+#categories{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px}
+.cat{white-space:nowrap;background:#e8f2e9;color:#14532d}
+.cat.active{background:var(--green);color:white}
+#products{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}
+.product{border:1px solid var(--border);border-radius:13px;overflow:hidden;background:white;min-width:0}
+.product img{width:100%;height:145px;object-fit:cover;background:#edf2ed}
+.product .info{padding:10px}
+.product h3{font-size:16px;margin:0 0 8px;overflow-wrap:anywhere}
+.price{font-size:19px;color:var(--green);font-weight:bold;margin-bottom:8px}
+.notes{font-size:13px;color:#647067;overflow-wrap:anywhere;margin-bottom:8px}
+.actions{display:flex;gap:5px}
+.actions button{font-size:12px;padding:8px 9px}
+#status{font-size:14px;white-space:pre-wrap;margin:8px 0}
+#status.error{color:#b91c1c}
+#status.ok{color:#166534}
+small{color:#657168}
+.preview{width:90px;height:90px;object-fit:cover;border-radius:10px;display:none;margin:5px 0}
+label{font-size:14px;font-weight:bold;display:block}
+.empty{grid-column:1/-1;text-align:center;padding:25px;color:#68746b}
 </style>
 </head>
 <body>
 <header>
-<h1>دليل أسعار المحل</h1>
-<p>كل المنتجات والأسعار في مكان واحد</p>
+<h1>📋 دليل أسعار المحل</h1>
+<p>كل أسعار منتجاتك وأقسامك في مكان واحد</p>
 </header>
-
 <main>
-<section class="panel">
-<h2>ابحث عن منتج</h2>
-<input id="search" placeholder="اكتب اسم المنتج..." oninput="renderProducts()">
-<select id="filter" onchange="renderProducts()">
-<option value="">كل الأقسام</option>
-</select>
-<p id="status">جاري الاتصال...</p>
-</section>
-
-<section class="panel">
-<h2>إضافة قسم جديد</h2>
-<input id="categoryName" placeholder="اسم القسم">
-<button onclick="addCategory()">إضافة القسم</button>
-</section>
-
-<section class="panel">
-<h2 id="formTitle">إضافة منتج</h2>
-<input id="productName" placeholder="اسم المنتج">
-<div class="grid">
-<input id="productPrice" type="number" min="0" step="0.01" placeholder="السعر">
-<select id="productCategory">
-<option value="">اختر القسم</option>
-</select>
+<div class="panel">
+<h2>🔎 البحث عن منتج</h2>
+<input id="search" placeholder="اكتب اسم المنتج..." autocomplete="off">
+<div id="status">جاري الاتصال بقاعدة البيانات...</div>
 </div>
-<textarea id="productNotes" rows="2" placeholder="ملاحظات اختيارية"></textarea>
-<button onclick="saveProduct()">حفظ المنتج</button>
-<button class="secondary" onclick="clearForm()">إلغاء</button>
-</section>
 
-<section class="panel">
-<h2>المنتجات والأسعار</h2>
-<div id="products"><div class="empty">جاري تحميل المنتجات...</div></div>
-</section>
-<footer>دليل أسعار المحل</footer>
+<div class="panel">
+<div class="row" style="align-items:center">
+<h2 style="flex:1">📂 الأقسام</h2>
+<button id="addCat" type="button">+ قسم جديد</button>
+</div>
+<div id="categories"></div>
+<div id="catForm" hidden>
+<label for="catName">اسم القسم</label>
+<input id="catName" placeholder="مثال: منظفات">
+<div class="row">
+<button id="saveCat" type="button">حفظ القسم</button>
+<button id="cancelCat" class="secondary" type="button">إلغاء</button>
+</div>
+</div>
+</div>
+
+<div class="panel">
+<div class="row" style="align-items:center">
+<h2 style="flex:1">🛍️ المنتجات</h2>
+<button id="addProduct" type="button">+ منتج جديد</button>
+</div>
+<div id="productForm" hidden>
+<label for="pName">اسم المنتج *</label>
+<input id="pName" placeholder="اسم المنتج">
+<label for="pPrice">السعر بالجنيه *</label>
+<input id="pPrice" type="number" min="0" step="0.01" placeholder="0.00">
+<label for="pCategory">القسم *</label>
+<select id="pCategory"></select>
+<label for="pNotes">ملاحظات (اختياري)</label>
+<textarea id="pNotes" rows="2" placeholder="تفاصيل المنتج"></textarea>
+<label for="pImage">صورة من الجهاز أو الكاميرا</label>
+<input id="pImage" type="file" accept="image/*">
+<img id="preview" class="preview" alt="معاينة الصورة">
+<div class="row">
+<button id="saveProduct" type="button">حفظ المنتج</button>
+<button id="cancelProduct" class="secondary" type="button">إلغاء</button>
+</div>
+<small>يمكنك اختيار صورة من المعرض أو التصوير إذا ظهر خيار الكاميرا.</small>
+</div>
+</div>
+
+<div id="products"></div>
+<p style="text-align:center"><small>تحتاج إضافة وتعديل البيانات إلى اتصال بالإنترنت.</small></p>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL="https://sovxdgvrwbohhyuhktnp.supabase.co";
+const SUPABASE_URL = "https://sovxdgvrwbohhyuhktnp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_itvtDhJzdXH1X3GUoshKkg_neEvjG3i";
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-/* ضع المفتاح العام Publishable key هنا قبل النشر */
-const SUPABASE_KEY="sb_publishable_itvtDhJzdXH1X3GUoshKkg_neEvjG3i";
+const $ = id => document.getElementById(id);
+let categories = [], products = [], selectedCategory = "all";
+let editingProduct = null, editingCategory = null, imageUrl = "";
+const status = $("status");
 
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let categories=[];
-let products=[];
-let editingId=null;
-
-const el=id=>document.getElementById(id);
-const escapeHTML=s=>String(s??"").replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-})[c]);
-
-async function loadData(){
- if(SUPABASE_KEY==="PASTE_YOUR_PUBLISHABLE_KEY_HERE"){
-  el("status").textContent="المفتاح العام لم تتم إضافته بعد.";
-  el("products").innerHTML='<div class="empty">أضف مفتاح Supabase العام لتشغيل البرنامج.</div>';
-  return;
- }
- el("status").textContent="جاري تحميل البيانات...";
+function message(text,error=false){
+ status.textContent=text;
+ status.className=error?"error":"ok";
+}
+function escapeHTML(value){
+ return String(value??"").replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ })[c]);
+}
+function money(value){
+ return Number(value).toLocaleString("ar-EG",{maximumFractionDigits:2})+" ج.م";
+}
+async function loadAll(){
+ message("جاري تحميل البيانات...");
  try{
   const [c,p]=await Promise.all([
-   db.from("categories").select("id,name").order("name"),
-   db.from("products").select("id,name,price,category_id,notes").order("name")
+   db.from("categories").select("id,name,created_at").order("created_at"),
+   db.from("products").select("id,name,price,category_id,image_url,notes,created_at").order("created_at",{ascending:false})
   ]);
   if(c.error)throw c.error;
   if(p.error)throw p.error;
   categories=c.data||[];
   products=p.data||[];
-  fillCategories();
+  renderCategories();
   renderProducts();
-  el("status").textContent="تم تحميل البيانات.";
+  fillCategorySelect();
+  message("تم تحميل البيانات بنجاح.");
  }catch(e){
   console.error(e);
-  el("status").textContent="تعذر التحميل. راجع صلاحيات قاعدة البيانات.";
-  el("products").innerHTML='<div class="empty">تعذر تحميل المنتجات. تأكد من إعدادات Supabase.</div>';
+  message("تعذر تحميل البيانات. تأكد من إعداد صلاحيات Supabase والجداول والاتصال بالإنترنت.\n"+(e.message||""),true);
  }
 }
-
-function fillCategories(){
- const oldFilter=el("filter").value;
- const oldCat=el("productCategory").value;
- el("filter").innerHTML='<option value="">كل الأقسام</option>'+
-  categories.map(c=>`<option value="${escapeHTML(c.id)}">${escapeHTML(c.name)}</option>`).join("");
- el("productCategory").innerHTML='<option value="">اختر القسم</option>'+
-  categories.map(c=>`<option value="${escapeHTML(c.id)}">${escapeHTML(c.name)}</option>`).join("");
- el("filter").value=oldFilter;
- el("productCategory").value=oldCat;
+function renderCategories(){
+ const box=$("categories");
+ box.innerHTML="";
+ const all=document.createElement("button");
+ all.className="cat"+(selectedCategory==="all"?" active":"");
+ all.textContent="كل المنتجات";
+ all.onclick=()=>{selectedCategory="all";renderCategories();renderProducts()};
+ box.appendChild(all);
+ categories.forEach(c=>{
+  const b=document.createElement("button");
+  b.className="cat"+(selectedCategory===c.id?" active":"");
+  b.textContent=c.name;
+  b.onclick=()=>{selectedCategory=c.id;renderCategories();renderProducts()};
+  b.oncontextmenu=e=>{
+   e.preventDefault();
+   if(confirm("تعديل اسم القسم "+c.name+"؟")) editCategory(c);
+  };
+  box.appendChild(b);
+ });
 }
-
-async function addCategory(){
- const name=el("categoryName").value.trim();
- if(!name)return alert("اكتب اسم القسم.");
- const {error}=await db.from("categories").insert({name});
- if(error)return alert("تعذرت إضافة القسم: "+error.message);
- el("categoryName").value="";
- await loadData();
+function fillCategorySelect(){
+ const select=$("pCategory");
+ select.innerHTML='<option value="">اختر القسم</option>'+
+ categories.map(c=>`<option value="${escapeHTML(c.id)}">${escapeHTML(c.name)}</option>`).join("");
 }
-
-async function saveProduct(){
- const name=el("productName").value.trim();
- const priceText=el("productPrice").value;
- const price=Number(priceText);
- const category_id=el("productCategory").value;
- const notes=el("productNotes").value.trim();
- if(!name||priceText===""||!Number.isFinite(price)||price<0||!category_id)
-  return alert("اكتب اسم المنتج والسعر واختر القسم.");
- const data={name,price,category_id,notes:notes||null};
- const result=editingId
-  ?await db.from("products").update(data).eq("id",editingId)
-  :await db.from("products").insert(data);
- if(result.error)return alert("تعذر الحفظ: "+result.error.message);
- clearForm();
- await loadData();
-}
-
-function editProduct(id){
- const p=products.find(x=>x.id===id);
- if(!p)return;
- editingId=id;
- el("productName").value=p.name;
- el("productPrice").value=p.price;
- el("productCategory").value=p.category_id;
- el("productNotes").value=p.notes||"";
- el("formTitle").textContent="تعديل المنتج";
- window.scrollTo({top:0,behavior:"smooth"});
-}
-
-function clearForm(){
- editingId=null;
- el("productName").value="";
- el("productPrice").value="";
- el("productCategory").value="";
- el("productNotes").value="";
- el("formTitle").textContent="إضافة منتج";
-}
-
-async function deleteProduct(id){
- if(!confirm("هل تريد حذف المنتج؟"))return;
- const {error}=await db.from("products").delete().eq("id",id);
- if(error)return alert("تعذر الحذف: "+error.message);
- await loadData();
-}
-
 function renderProducts(){
- const q=el("search").value.trim().toLocaleLowerCase();
- const cat=el("filter").value;
- const list=products.filter(p=>
-  p.name.toLocaleLowerCase().includes(q)&&(!cat||p.category_id===cat)
- );
+ const term=$("search").value.trim().toLowerCase();
+ const list=products.filter(p=>{
+  const matchesCategory=selectedCategory==="all"||p.category_id===selectedCategory;
+  const category=categories.find(c=>c.id===p.category_id);
+  const matchesTerm=(p.name+" "+(p.notes||"")+" "+(category?.name||"")).toLowerCase().includes(term);
+  return matchesCategory&&matchesTerm;
+ });
+ const box=$("products");
  if(!list.length){
-  el("products").innerHTML='<div class="empty">لا توجد منتجات لعرضها.</div>';
+  box.innerHTML='<div class="panel empty">لا توجد منتجات هنا حتى الآن.</div>';
   return;
  }
- el("products").innerHTML=list.map(p=>{
-  const c=categories.find(x=>x.id===p.category_id);
-  return `<article class="product">
-   <h3>${escapeHTML(p.name)}</h3>
-   <div class="price">${Number(p.price).toLocaleString("ar-EG")} جنيه</div>
-   <div class="small">القسم: ${escapeHTML(c?.name||"غير محدد")}</div>
-   ${p.notes?`<div class="small">${escapeHTML(p.notes)}</div>`:""}
-   <div class="actions">
-    <button class="secondary" onclick="editProduct('${escapeHTML(p.id)}')">تعديل</button>
-    <button class="danger" onclick="deleteProduct('${escapeHTML(p.id)}')">حذف</button>
-   </div>
-  </article>`;
+ box.innerHTML=list.map(p=>{
+  const category=categories.find(c=>c.id===p.category_id);
+  const img=p.image_url?`<img src="${escapeHTML(p.image_url)}" alt="${escapeHTML(p.name)}" loading="lazy">`:
+  '<div style="height:145px;display:grid;place-items:center;background:#edf2ed;font-size:42px">🛍️</div>';
+  return `<article class="product">${img}<div class="info">
+  <h3>${escapeHTML(p.name)}</h3>
+  <div class="price">${money(p.price)}</div>
+  <small>${escapeHTML(category?.name||"بدون قسم")}</small>
+  ${p.notes?`<div class="notes">${escapeHTML(p.notes)}</div>`:""}
+  <div class="actions" style="margin-top:10px">
+  <button class="secondary" data-edit="${p.id}">تعديل</button>
+  <button class="danger" data-delete="${p.id}">حذف</button>
+  </div></div></article>`;
  }).join("");
+ box.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editProduct(products.find(p=>p.id===b.dataset.edit)));
+ box.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteProduct(products.find(p=>p.id===b.dataset.delete)));
 }
+$("search").addEventListener("input",renderProducts);
 
-loadData();
+$("addCat").onclick=()=>{
+ editingCategory=null;
+ $("catName").value="";
+ $("catForm").hidden=false;
+ $("catName").focus();
+};
+$("cancelCat").onclick=()=>{$("catForm").hidden=true;editingCategory=null};
+function editCategory(c){
+ editingCategory=c;
+ $("catName").value=c.name;
+ $("catForm").hidden=false;
+ $("catName").focus();
+}
+$("saveCat").onclick=async()=>{
+ const name=$("catName").value.trim();
+ if(!name)return alert("اكتب اسم القسم أولًا.");
+ $("saveCat").disabled=true;
+ try{
+  const result=editingCategory?
+   await db.from("categories").update({name}).eq("id",editingCategory.id):
+   await db.from("categories").insert({name});
+  if(result.error)throw result.error;
+  $("catForm").hidden=true;
+  editingCategory=null;
+  await loadAll();
+ }catch(e){message("فشل حفظ القسم: "+e.message,true)}
+ finally{$("saveCat").disabled=false}
+};
+
+$("addProduct").onclick=()=>{
+ editingProduct=null;imageUrl="";
+ $("pName").value="";$("pPrice").value="";
+ $("pNotes").value="";$("pImage").value="";
+ $("preview").style.display="none";
+ fillCategorySelect();$("pCategory").value="";
+ $("productForm").hidden=false;
+ $("pName").focus();
+};
+$("cancelProduct").onclick=()=>{$("productForm").hidden=true;editingProduct=null};
+
+$("pImage").onchange=()=>{
+ const file=$("pImage").files[0];
+ if(!file){$("preview").style.display="none";return}
+ if(!file.type.startsWith("image/")){alert("اختار ملف صورة.");$("pImage").value="";return}
+ if(file.size>6*1024*1024){alert("الصورة أكبر من 6 ميجابايت. اختار صورة أصغر.");$("pImage").value="";return}
+ $("preview").src=URL.createObjectURL(file);
+ $("preview").style.display="block";
+};
+
+function editProduct(p){
+ if(!p)return;
+ editingProduct=p;imageUrl=p.image_url||"";
+ $("pName").value=p.name;
+ $("pPrice").value=p.price;
+ $("pNotes").value=p.notes||"";
+ fillCategorySelect();$("pCategory").value=p.category_id;
+ $("pImage").value="";
+ if(imageUrl){$("preview").src=imageUrl;$("preview").style.display="block"}
+ else $("preview").style.display="none";
+ $("productForm").hidden=false;
+ $("productForm").scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("saveProduct").onclick=async()=>{
+ const name=$("pName").value.trim();
+ const price=$("pPrice").value;
+ const category_id=$("pCategory").value;
+ const notes=$("pNotes").value.trim();
+ if(!name||price===""||Number(price)<0||!Number.isFinite(Number(price))||!category_id){
+  alert("اكتب اسم المنتج والسعر واختار القسم.");
+  return;
+ }
+ $("saveProduct").disabled=true;
+ message("جاري حفظ المنتج...");
+ try{
+  const file=$("pImage").files[0];
+  if(file){
+   const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
+   const path=Date.now()+"-"+Math.random().toString(36).slice(2)+"."+ext;
+   const upload=await db.storage.from("product-images").upload(path,file,{upsert:false,contentType:file.type});
+   if(upload.error)throw upload.error;
+   imageUrl=db.storage.from("product-images").getPublicUrl(path).data.publicUrl;
+  }
+  const payload={name,price:Number(price),category_id,notes,image_url:imageUrl||null};
+  const result=editingProduct?
+   await db.from("products").update(payload).eq("id",editingProduct.id):
+   await db.from("products").insert(payload);
+  if(result.error)throw result.error;
+  $("productForm").hidden=true;editingProduct=null;
+  await loadAll();
+ }catch(e){
+  console.error(e);
+  message("فشل حفظ المنتج: "+e.message+"\nقد تحتاج لتشغيل إعداد SQL وصلاحيات الصور في Supabase.",true);
+ }finally{$("saveProduct").disabled=false}
+};
+async function deleteProduct(p){
+ if(!p||!confirm("متأكد إنك عايز تحذف المنتج: "+p.name+"؟"))return;
+ try{
+  const {error}=await db.from("products").delete().eq("id",p.id);
+  if(error)throw error;
+  await loadAll();
+ }catch(e){message("فشل حذف المنتج: "+e.message,true)}
+}
+loadAll();
+if("serviceWorker" in navigator){
+ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.error));
+}
 </script>
 </body>
 </html>
