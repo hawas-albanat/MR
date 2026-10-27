@@ -1345,3 +1345,46 @@
   </script>
 </body>
 </html>
+<script>
+(function () {
+  const originalOpen = openProductDetail;
+  const originalClose = closeProductDetail;
+
+  let closingByBack = false;
+
+  openProductDetail = function (productId) {
+    if (currentDetailProductId === null) {
+      history.pushState(
+        { productDetails: true },
+        "",
+        location.href
+      );
+    }
+
+    originalOpen(productId);
+  };
+
+  closeProductDetail = function (fromPopState = false) {
+    if (currentDetailProductId === null) return;
+
+    if (!fromPopState && !closingByBack) {
+      closingByBack = true;
+      history.back();
+      return;
+    }
+
+    closingByBack = false;
+    originalClose();
+  };
+
+  document.getElementById("backBtn").onclick = function () {
+    closeProductDetail();
+  };
+
+  window.addEventListener("popstate", function () {
+    if (currentDetailProductId !== null) {
+      closeProductDetail(true);
+    }
+  });
+})();
+</script>
