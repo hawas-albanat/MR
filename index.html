@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -15,7 +14,7 @@ body{margin:0;background:var(--light);font-family:Arial,Tahoma,sans-serif;color:
 header{background:var(--green);color:white;padding:22px 16px 28px}
 header h1{margin:0 0 7px;font-size:25px}
 header p{margin:0;color:#e3f4e5;font-size:14px}
-main{max-width:850px;margin:auto;padding:15px}
+main{max-width:1000px;margin:auto;padding:15px}
 .panel{background:white;border:1px solid var(--border);border-radius:15px;padding:15px;margin-bottom:15px}
 h2{font-size:18px;margin:0 0 13px}
 input,select,textarea,button{font:inherit}
@@ -30,14 +29,20 @@ button:disabled{opacity:.5}
 #categories{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px}
 .cat{white-space:nowrap;background:#e8f2e9;color:#14532d}
 .cat.active{background:var(--green);color:white}
-#products{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}
-.product{border:1px solid var(--border);border-radius:13px;overflow:hidden;background:white;min-width:0}
-.product img{width:100%;height:145px;object-fit:cover;background:#edf2ed}
-.product .info{padding:10px}
+#products{display:grid;grid-template-columns:repeat(3, 1fr);gap:15px}
+@media (max-width: 768px){
+  #products{grid-template-columns:repeat(2, 1fr);}
+}
+@media (max-width: 480px){
+  #products{grid-template-columns:repeat(1, 1fr);}
+}
+.product{border:1px solid var(--border);border-radius:13px;overflow:hidden;background:white;min-width:0;display:flex;flex-direction:column;justify-content:space-between}
+.product img{width:100%;height:150px;object-fit:cover;background:#edf2ed}
+.product .info{padding:12px;flex:1;display:flex;flex-direction:column}
 .product h3{font-size:16px;margin:0 0 8px;overflow-wrap:anywhere}
 .price{font-size:19px;color:var(--green);font-weight:bold;margin-bottom:8px}
-.notes{font-size:13px;color:#647067;overflow-wrap:anywhere;margin-bottom:8px}
-.actions{display:flex;gap:5px}
+.notes{font-size:13px;color:#647067;overflow-wrap:anywhere;margin-bottom:8px;flex:1}
+.actions{display:flex;gap:5px;margin-top:auto}
 .actions button{font-size:12px;padding:8px 9px}
 #status{font-size:14px;white-space:pre-wrap;margin:8px 0}
 #status.error{color:#b91c1c}
@@ -189,13 +194,13 @@ function renderProducts(){
  box.innerHTML=list.map(p=>{
   const category=categories.find(c=>c.id===p.category_id);
   const img=p.image_url?`<img src="${escapeHTML(p.image_url)}" alt="${escapeHTML(p.name)}" loading="lazy">`:
-  '<div style="height:145px;display:grid;place-items:center;background:#edf2ed;font-size:42px">🛍️</div>';
+  '<div style="height:150px;display:grid;place-items:center;background:#edf2ed;font-size:42px">🛍️</div>';
   return `<article class="product">${img}<div class="info">
   <h3>${escapeHTML(p.name)}</h3>
   <div class="price">${money(p.price)}</div>
   <small>${escapeHTML(category?.name||"بدون قسم")}</small>
   ${p.notes?`<div class="notes">${escapeHTML(p.notes)}</div>`:""}
-  <div class="actions" style="margin-top:10px">
+  <div class="actions">
   <button class="secondary" data-edit="${p.id}">تعديل</button>
   <button class="danger" data-delete="${p.id}">حذف</button>
   </div></div></article>`;
