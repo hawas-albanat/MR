@@ -1,8 +1,24 @@
 {
+  "id": "/MR/",
   "name": "محل هوس البنات",
   "short_name": "هوس البنات",
-  "start_url": "./index.html",
+  "start_url": "/MR/",
+  "scope": "/MR/",
   "display": "standalone",
   "background_color": "#f3f7f3",
-  "theme_color": "#166534"
+  "theme_color": "#166534",
+  "icons": [
+    {
+      "src": "./Icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./Icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
 }
