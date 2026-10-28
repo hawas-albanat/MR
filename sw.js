@@ -1,35 +1,69 @@
-const CACHE_NAME = "dalil-asaar-v4";
+
+const CACHE_NAME = "hawas-albanat-v5";
+
 const CORE = [
-  "/MR/",
-  "/MR/index.html",
-  "/MR/manifest.json",
-  "/MR/Icon.svg"
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
 self.addEventListener("install", event => {
-  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return Promise.allSettled(CORE.map(url => cache.add(url)));
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(CORE))
+      .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+    caches.keys()
+      .then(keys =>
+        Promise.all(
+          keys
+            .filter(key => key !== CACHE_NAME)
+            .map(key => caches.delete(key))
+        )
       )
-    ).then(() => self.clients.claim())
+      .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET" || !event.request.url.startsWith(self.location.origin)) {
+  const request = event.request;
+
+  if (
+    request.method !== "GET" ||
+    new URL(request.url).origin !== self.location.origin
+  ) {
     return;
   }
+
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+    fetch(request)
+      .then(response => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(request, copy);
+          });
+        }
+        return response;
+      })
+      .catch(async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+
+        if (request.mode === "navigate") {
+          return (
+            await caches.match("./index.html") ||
+            Response.error()
+          );
+        }
+
+        return Response.error();
+      })
   );
 });
