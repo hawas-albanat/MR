@@ -1329,33 +1329,60 @@
 </html>
 <script>
 (function () {
-  const catalog = document.getElementById("catalogSection");
-  const detail = document.getElementById("detailSection");
-  const backButton = document.getElementById("backBtn");
+  let detailHistoryEntry = false;
+  let closePending = false;
 
-  document.addEventListener("click", function (event) {
-    const card = event.target.closest(".product-card");
+  const originalOpenProductDetail = openProductDetail;
+  const originalCloseProductDetail = closeProductDetail;
 
-    if (!card || event.target.closest("button")) return;
-    if (!detail.classList.contains("hidden")) return;
+  openProductDetail = function (productId) {
+    if (currentDetailProductId === null) {
+      history.pushState(
+        { productDetail: true },
+        "",
+        location.href
+      );
+      detailHistoryEntry = true;
+      closePending = false;
+    }
 
-    history.pushState(
-      { screen: "product-detail" },
-      "",
-      location.href
-    );
-  }, true);
+    originalOpenProductDetail(productId);
+  };
+
+  closeProductDetail = function () {
+    if (
+      currentDetailProductId !== null &&
+      detailHistoryEntry &&
+      !closePending
+    ) {
+      closePending = true;
+      history.back();
+      return;
+    }
+
+    originalCloseProductDetail();
+    detailHistoryEntry = false;
+    closePending = false;
+  };
 
   window.addEventListener("popstate", function () {
-    if (!detail.classList.contains("hidden")) {
-      detail.classList.add("hidden");
-      catalog.classList.remove("hidden");
+    if (currentDetailProductId !== null) {
+      currentDetailProductId = null;
+
+      document.getElementById("detailSection")
+        .classList.add("hidden");
+
+      document.getElementById("catalogSection")
+        .classList.remove("hidden");
+
       window.scrollTo(0, 0);
     }
+
+    detailHistoryEntry = false;
+    closePending = false;
   });
 
-  if (backButton) {
-    backButton.style.display = "none";
-  }
+  const backButton = document.getElementById("backBtn");
+  if (backButton) backButton.remove();
 })();
 </script>
