@@ -1,4 +1,4 @@
-const CACHE_NAME = "dalil-asaar-v1";
+const CACHE_NAME = "dalil-asaar-v2";
 const CORE = [
   "./",
   "./index.html",
@@ -9,7 +9,12 @@ const CORE = [
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(CORE))
+      .then(cache => {
+        // استخدام cache.add فردي أو التأكد من عدم فشل الكل لو ملف واحد علق
+        return Promise.all(
+          CORE.map(url => cache.add(url).catch(err => console.log('Failed to cache:', url, err)))
+        );
+      })
       .then(() => self.skipWaiting())
   );
 });
@@ -38,25 +43,19 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  if (
-    url.pathname.endsWith("/index.html") ||
-    url.pathname.endsWith("/MR/") ||
-    url.pathname.endsWith("/")
-  ) {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache =>
-            cache.put(event.request, copy)
-          );
-          return response;
-        })
-        .catch(() =>
-          caches.match(event.request).then(
-            response => response || caches.match("./index.html")
-          )
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache =>
+          cache.put(event.request, copy)
+        );
+        return response;
+      })
+      .catch(() =>
+        caches.match(event.request).then(
+          response => response || caches.match("./index.html")
         )
-    );
-  }
+      )
+  );
 });
