@@ -1,61 +1,35 @@
-const CACHE_NAME = "dalil-asaar-v2";
+const CACHE_NAME = "dalil-asaar-v4";
 const CORE = [
-  "./",
-  "./index.html",
-  "./manifest.json",
-  "./icon.svg"
+  "/MR/",
+  "/MR/index.html",
+  "/MR/manifest.json",
+  "/MR/Icon.svg"
 ];
 
 self.addEventListener("install", event => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        // استخدام cache.add فردي أو التأكد من عدم فشل الكل لو ملف واحد علق
-        return Promise.all(
-          CORE.map(url => cache.add(url).catch(err => console.log('Failed to cache:', url, err)))
-        );
-      })
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache => {
+      return Promise.allSettled(CORE.map(url => cache.add(url)));
+    })
   );
 });
 
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys()
-      .then(keys =>
-        Promise.all(
-          keys
-            .filter(key => key !== CACHE_NAME)
-            .map(key => caches.delete(key))
-        )
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
       )
-      .then(() => self.clients.claim())
+    ).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", event => {
-  const url = new URL(event.request.url);
-
-  if (
-    event.request.method !== "GET" ||
-    url.origin !== self.location.origin
-  ) {
+  if (event.request.method !== "GET" || !event.request.url.startsWith(self.location.origin)) {
     return;
   }
-
   event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache =>
-          cache.put(event.request, copy)
-        );
-        return response;
-      })
-      .catch(() =>
-        caches.match(event.request).then(
-          response => response || caches.match("./index.html")
-        )
-      )
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
