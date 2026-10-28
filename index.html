@@ -1324,65 +1324,80 @@
       }  
     }  
   
-    initializeApp();  
-  </script>  </body>  
-</html>
-<script>
-(function () {
-  let detailHistoryEntry = false;
-  let closePending = false;
+ 
+    initializeApp();
+  </script>
 
-  const originalOpenProductDetail = openProductDetail;
-  const originalCloseProductDetail = closeProductDetail;
+  <script>
+  (function () {
+    let detailHistoryEntry = false;
+    let closePending = false;
 
-  openProductDetail = function (productId) {
-    if (currentDetailProductId === null) {
-      history.pushState(
-        { productDetail: true },
-        "",
-        location.href
-      );
-      detailHistoryEntry = true;
+    const originalOpenProductDetail = openProductDetail;
+    const originalCloseProductDetail = closeProductDetail;
+
+    openProductDetail = function (productId) {
+      if (currentDetailProductId === null) {
+        history.pushState(
+          { productDetail: true },
+          "",
+          location.href
+        );
+        detailHistoryEntry = true;
+        closePending = false;
+      }
+
+      originalOpenProductDetail(productId);
+    };
+
+    closeProductDetail = function () {
+      if (
+        currentDetailProductId !== null &&
+        detailHistoryEntry &&
+        !closePending
+      ) {
+        closePending = true;
+        history.back();
+        return;
+      }
+
+      originalCloseProductDetail();
+      detailHistoryEntry = false;
       closePending = false;
-    }
+    };
 
-    originalOpenProductDetail(productId);
-  };
+    window.addEventListener("popstate", function () {
+      if (currentDetailProductId !== null) {
+        currentDetailProductId = null;
 
-  closeProductDetail = function () {
-    if (
-      currentDetailProductId !== null &&
-      detailHistoryEntry &&
-      !closePending
-    ) {
-      closePending = true;
-      history.back();
-      return;
-    }
+        document.getElementById("detailSection")
+          .classList.add("hidden");
 
-    originalCloseProductDetail();
-    detailHistoryEntry = false;
-    closePending = false;
-  };
+        document.getElementById("catalogSection")
+          .classList.remove("hidden");
 
-  window.addEventListener("popstate", function () {
-    if (currentDetailProductId !== null) {
-      currentDetailProductId = null;
+        window.scrollTo(0, 0);
+      }
 
-      document.getElementById("detailSection")
-        .classList.add("hidden");
+      detailHistoryEntry = false;
+      closePending = false;
+    });
 
-      document.getElementById("catalogSection")
-        .classList.remove("hidden");
+    const backButton = document.getElementById("backBtn");
+    if (backButton) backButton.remove();
+  })();
+  </script>
 
-      window.scrollTo(0, 0);
-    }
+  <script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("./sw.js").catch(function (error) {
+        console.error("فشل تسجيل التطبيق:", error);
+      });
+    });
+  }
+  </script>
 
-    detailHistoryEntry = false;
-    closePending = false;
-  });
-
-  const backButton = document.getElementById("backBtn");
-  if (backButton) backButton.remove();
-})();
-</script>
+</body>
+</html>
+   
