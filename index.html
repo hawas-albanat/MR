@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#166534">
-<meta name="description" content="">
-<meta name="application-name" content="">
-<title></title>
-<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#E91E63">
+<meta name="description" content="كتالوج منتجات وأسعار محل هوس البنات">
+<meta name="application-name" content="محل هوس البنات">
+<title>محل هوس البنات</title>
+<link rel="manifest" href="/MR/manifest.json?v=5">
+<link rel="icon" href="/MR/icon.svg">
 
 <script>
 /* CONFIG:START ===== إعدادات المشروع: عدّل هنا فقط ===== */
@@ -886,7 +887,7 @@ initializeApp();
     }
     detailHistoryEntry = false;
     closePending = false;
-  });
+  };
 
   const backButton = document.getElementById("backBtn");
   if (backButton) backButton.remove();
@@ -896,7 +897,7 @@ initializeApp();
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("./sw.js").catch(function (error) {
+    navigator.serviceWorker.register("/MR/sw.js?v=5", { scope: "/MR/" }).catch(function (error) {
       console.error("فشل تسجيل التطبيق:", error);
     });
   });
