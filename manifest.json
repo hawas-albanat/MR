@@ -1,15 +1,15 @@
 {
-  "id": "/hawas-girls-store",
+  "id": "/MR/",
   "name": "محل هوس البنات",
   "short_name": "هوس البنات",
-  "start_url": "./index.html?app=hawas",
-  "scope": "./",
+  "start_url": "/MR/",
+  "scope": "/MR/",
   "display": "standalone",
   "background_color": "#f3f7f3",
   "theme_color": "#E91E63",
   "icons": [
     {
-      "src": "./icon.svg",
+      "src": "/MR/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
