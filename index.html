@@ -7,7 +7,7 @@
 <meta name="description" content="كتالوج منتجات وأسعار محل هوس البنات">  
 <meta name="application-name" content="محل هوس البنات">  
 <title>محل هوس البنات</title>  
-<link rel="manifest" href="/MR/manifest.json?v=6">  
+<link rel="manifest" href="/MR/manifest.json?v=7">  
 <link rel="icon" href="/MR/icon.svg">  
 
 <script>  
@@ -45,7 +45,6 @@ header{background:var(--green);color:#fff;padding:18px 14px;text-align:center;po
 header h1{margin:0;font-size:25px}  
 header p{margin:5px 0 0;font-size:14px;opacity:.92}  
 
-/* زر الإدارة الصغير العائم في الهيدر */
 .admin-toggle-btn {
   position: absolute;
   top: 12px;
@@ -57,6 +56,7 @@ header p{margin:5px 0 0;font-size:14px;opacity:.92}
   border-radius: 8px;
   font-size: 12px;
   font-weight: bold;
+  cursor: pointer;
 }
 .admin-toggle-btn:hover {
   background: rgba(255, 255, 255, 0.3);
@@ -125,13 +125,12 @@ header h1{font-size:22px}
 </head>  
 <body>  
 <header>  
-  <button id="adminToggleBtn" class="admin-toggle-btn" type="button">⚙️ الإدارة</button>
+  <button id="adminToggleBtn" class="admin-toggle-btn" type="button">⚙️ الإدارة</button>  
   <h1 id="headerTitle"></h1>  
   <p id="headerSubtitle"></p>  
 </header>  
 
 <main class="container">  
-  <!-- لوحة تسجيل الدخول مخفية تماماً عن العملاء -->
   <section id="loginPanel" class="panel hidden">  
     <h2>دخول الإدارة</h2>  
     <p>تسجيل الدخول مطلوب لإضافة المنتجات وتعديلها وإدارة الأقسام.</p>  
@@ -232,16 +231,23 @@ header h1{font-size:22px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  
 <script>  
 (function () {  
-  const setMeta = (sel, val) => document.querySelector(sel).setAttribute("content", val);  
+  const setMeta = (sel, val) => {
+    const el = document.querySelector(sel);
+    if (el) el.setAttribute("content", val);
+  };  
   document.title = CONFIG.title;  
   setMeta('meta[name="description"]', CONFIG.description);  
   setMeta('meta[name="application-name"]', CONFIG.appName);  
   setMeta('meta[name="theme-color"]', CONFIG.themeColor);  
   document.documentElement.style.setProperty("--green", CONFIG.primaryColor);  
-  document.getElementById("headerTitle").textContent = CONFIG.headerTitle;  
-  document.getElementById("headerSubtitle").textContent = CONFIG.headerSubtitle;  
-  document.getElementById("footerText").textContent = CONFIG.footerText;  
-  document.getElementById("priceLabel").textContent = "السعر بال" + CONFIG.currency;  
+  const hTitle = document.getElementById("headerTitle");
+  if (hTitle) hTitle.textContent = CONFIG.headerTitle;  
+  const hSub = document.getElementById("headerSubtitle");
+  if (hSub) hSub.textContent = CONFIG.headerSubtitle;  
+  const fText = document.getElementById("footerText");
+  if (fText) fText.textContent = CONFIG.footerText;  
+  const pLabel = document.getElementById("priceLabel");
+  if (pLabel) pLabel.textContent = "السعر بال" + CONFIG.currency;  
 })();  
 
 const supabaseClient = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);  
@@ -258,15 +264,20 @@ let editingProductId = null;
 let editingCategoryId = null;  
 let currentDetailProductId = null;  
 
-const $= id => document.getElementById(id);$("imageHelp").textContent = IMAGE_HELP_NEW;  
+const $ = id => document.getElementById(id);  
+if ($("imageHelp")) $("imageHelp").textContent = IMAGE_HELP_NEW;  
 
 function showStatus(id, message, error = false) {  
   const el = $(id);  
+  if (!el) return;
   el.textContent = message;  
   el.classList.remove("hidden", "error");  
   if (error) el.classList.add("error");  
 }  
-function hideStatus(id) { $(id).classList.add("hidden"); }  
+function hideStatus(id) { 
+  const el = $(id);
+  if (el) el.classList.add("hidden"); 
+}  
 
 function escapeHTML(value) {  
   return String(value ?? "").replace(/[&<>"']/g, c => ({  
@@ -300,23 +311,31 @@ function requireAdmin() {
 
 function setLoggedInUI() {  
   if (isAdmin) {  
-    $("loginPanel").classList.add("hidden");  
-    $("adminPanel").classList.remove("hidden");  
+    if ($("loginPanel")) $("loginPanel").classList.add("hidden");  
+    if ($("adminPanel")) $("adminPanel").classList.remove("hidden");  
   } else {  
-    $("adminPanel").classList.add("hidden");  
+    if ($("adminPanel")) $("adminPanel").classList.add("hidden");  
   }  
 }  
 
-// زر الإدارة العائم لإظهار نافذة تسجيل الدخول عند الحاجة
-$("adminToggleBtn").addEventListener("click", () => {
-  if (!isAdmin) {
-    $("loginPanel").classList.toggle("hidden");
-    $("loginPanel").scrollIntoView({ behavior: "smooth" });
-  } else {
-    $("adminPanel").classList.toggle("hidden");
-    $("adminPanel").scrollIntoView({ behavior: "smooth" });
-  }
-});
+const adminToggleBtn = $("adminToggleBtn");
+if (adminToggleBtn) {
+  adminToggleBtn.addEventListener("click", () => {
+    if (!isAdmin) {
+      const loginPanel = $("loginPanel");
+      if (loginPanel) {
+        loginPanel.classList.toggle("hidden");
+        loginPanel.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      const adminPanel = $("adminPanel");
+      if (adminPanel) {
+        adminPanel.classList.toggle("hidden");
+        adminPanel.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  });
+}
 
 async function loadCategories() {  
   const { data, error } = await supabaseClient.from("categories").select("*").order("id", { ascending: true });  
@@ -356,6 +375,7 @@ async function refreshAll() {
 
 function renderCategories() {  
   const container = $("categories");  
+  if (!container) return;
   container.innerHTML = "";  
 
   const allChip = document.createElement("div");  
@@ -404,6 +424,7 @@ function renderCategories() {
 
 function populateCategorySelect() {  
   const select = $("productCategory");  
+  if (!select) return;
   const previousValue = select.value;  
   select.innerHTML = '<option value="">اختر القسم</option>';  
   categories.forEach(category => {  
@@ -417,7 +438,9 @@ function populateCategorySelect() {
 
 function renderProducts() {  
   const grid = $("productsGrid");  
-  const search = $("searchInput").value.trim().toLowerCase();  
+  const searchInput = $("searchInput");
+  if (!grid || !searchInput) return;
+  const search = searchInput.value.trim().toLowerCase();  
   grid.innerHTML = "";  
 
   const filtered = products.filter(product => {  
@@ -427,7 +450,8 @@ function renderProducts() {
     return matchesCategory && searchable.includes(search);  
   });  
 
-  $("emptyState").classList.toggle("hidden", filtered.length > 0);  
+  const emptyState = $("emptyState");
+  if (emptyState) emptyState.classList.toggle("hidden", filtered.length > 0);  
 
   filtered.forEach(product => {  
     const card = document.createElement("article");  
@@ -497,14 +521,17 @@ function openProductDetail(productId) {
   const product = products.find(i => String(i.id) === String(productId));  
   if (!product) return;  
   currentDetailProductId = product.id;  
-  $("catalogSection").classList.add("hidden");  
-  $("detailSection").classList.remove("hidden");  
+  const catalogSection = $("catalogSection");
+  const detailSection = $("detailSection");
+  if (catalogSection) catalogSection.classList.add("hidden");  
+  if (detailSection) detailSection.classList.remove("hidden");  
   renderProductDetail(product);  
   window.scrollTo({ top: 0, behavior: "smooth" });  
 }  
 
 function renderProductDetail(product) {  
   const detail = $("detailContent");  
+  if (!detail) return;
   const detailImages = productImages(product);  
 
   const message =  
@@ -541,28 +568,30 @@ function renderProductDetail(product) {
     mainImage.className = "detail-image";  
     mainImage.src = detailImages[0];  
     mainImage.alt = product.name || "صورة المنتج";  
-    imageWrap.appendChild(mainImage);  
+    if (imageWrap) imageWrap.appendChild(mainImage);  
 
-    if (detailImages.length === 1) thumbnails.classList.add("hidden");  
+    if (thumbnails) {
+      if (detailImages.length === 1) thumbnails.classList.add("hidden");  
 
-    detailImages.forEach((imageUrl, index) => {  
-      const thumbnail = document.createElement("img");  
-      thumbnail.className = "detail-thumbnail";  
-      thumbnail.src = imageUrl;  
-      thumbnail.alt = "صورة " + (index + 1);  
-      thumbnail.loading = "lazy";  
-      if (index === 0) thumbnail.classList.add("active");  
+      detailImages.forEach((imageUrl, index) => {  
+        const thumbnail = document.createElement("img");  
+        thumbnail.className = "detail-thumbnail";  
+        thumbnail.src = imageUrl;  
+        thumbnail.alt = "صورة " + (index + 1);  
+        thumbnail.loading = "lazy";  
+        if (index === 0) thumbnail.classList.add("active");  
 
-      thumbnail.addEventListener("click", () => {  
-        mainImage.src = imageUrl;  
-        thumbnails.querySelectorAll(".detail-thumbnail").forEach(i => i.classList.remove("active"));  
-        thumbnail.classList.add("active");  
+        thumbnail.addEventListener("click", () => {  
+          mainImage.src = imageUrl;  
+          thumbnails.querySelectorAll(".detail-thumbnail").forEach(i => i.classList.remove("active"));  
+          thumbnail.classList.add("active");  
+        });  
+        thumbnails.appendChild(thumbnail);  
       });  
-      thumbnails.appendChild(thumbnail);  
-    });  
+    }
   } else {  
-    imageWrap.textContent = "لا توجد صورة لهذا المنتج";  
-    thumbnails.classList.add("hidden");  
+    if (imageWrap) imageWrap.textContent = "لا توجد صورة لهذا المنتج";  
+    if (thumbnails) thumbnails.classList.add("hidden");  
   }  
 
   if (isAdmin) {  
@@ -589,52 +618,65 @@ function renderProductDetail(product) {
 
 function closeProductDetail() {  
   currentDetailProductId = null;  
-  $("detailSection").classList.add("hidden");  
-  $("catalogSection").classList.remove("hidden");  
+  const detailSection = $("detailSection");
+  const catalogSection = $("catalogSection");
+  if (detailSection) detailSection.classList.add("hidden");  
+  if (catalogSection) catalogSection.classList.remove("hidden");  
   window.scrollTo({ top: 0, behavior: "smooth" });  
 }  
 
-$("backBtn").addEventListener("click", closeProductDetail);  
-$("searchInput").addEventListener("input", renderProducts);  
+const backBtn = $("backBtn");
+if (backBtn) backBtn.addEventListener("click", closeProductDetail);  
+const searchInputEl = $("searchInput");
+if (searchInputEl) searchInputEl.addEventListener("input", renderProducts);  
 
-$("loginForm").addEventListener("submit", async event => {  
-  event.preventDefault();  
-  hideStatus("loginStatus");  
-  const email = $("email").value.trim();  
-  const password = $("password").value;  
+const loginForm = $("loginForm");
+if (loginForm) {
+  loginForm.addEventListener("submit", async event => {  
+    event.preventDefault();  
+    hideStatus("loginStatus");  
+    const emailInput = $("email");
+    const passwordInput = $("password");
+    if (!emailInput || !passwordInput) return;
+    const email = emailInput.value.trim();  
+    const password = passwordInput.value;  
 
-  try {  
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });  
-    if (error) throw error;  
-    currentUser = data.user;  
-    isAdmin = !!currentUser && currentUser.id === ADMIN_UID;  
+    try {  
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });  
+      if (error) throw error;  
+      currentUser = data.user;  
+      isAdmin = !!currentUser && currentUser.id === ADMIN_UID;  
 
-    if (!isAdmin) {  
-      await supabaseClient.auth.signOut();  
-      currentUser = null;  
-      isAdmin = false;  
+      if (!isAdmin) {  
+        await supabaseClient.auth.signOut();  
+        currentUser = null;  
+        isAdmin = false;  
+        setLoggedInUI();  
+        showStatus("loginStatus", "هذا الحساب غير مصرح له.", true);  
+        return;  
+      }  
       setLoggedInUI();  
-      showStatus("loginStatus", "هذا الحساب غير مصرح له.", true);  
-      return;  
+      renderCategories();  
+      renderProducts();  
+      showStatus("loginStatus", "تم تسجيل الدخول بنجاح.");  
+      await refreshAll();  
+    } catch (error) {  
+      showStatus("loginStatus", "تعذر تسجيل الدخول: " + error.message, true);  
     }  
+  });  
+}
+
+const logoutBtn = $("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {  
+    await supabaseClient.auth.signOut();  
+    currentUser = null;  
+    isAdmin = false;  
     setLoggedInUI();  
     renderCategories();  
     renderProducts();  
-    showStatus("loginStatus", "تم تسجيل الدخول بنجاح.");  
-    await refreshAll();  
-  } catch (error) {  
-    showStatus("loginStatus", "تعذر تسجيل الدخول: " + error.message, true);  
-  }  
-});  
-
-$("logoutBtn").addEventListener("click", async () => {  
-  await supabaseClient.auth.signOut();  
-  currentUser = null;  
-  isAdmin = false;  
-  setLoggedInUI();  
-  renderCategories();  
-  renderProducts();  
-});  
+  });  
+}
 
 supabaseClient.auth.onAuthStateChange((_event, session) => {  
   currentUser = session?.user || null;  
@@ -644,41 +686,51 @@ supabaseClient.auth.onAuthStateChange((_event, session) => {
   renderProducts();  
 });  
 
-$("categoryForm").addEventListener("submit", async event => {  
-  event.preventDefault();  
-  if (!requireAdmin()) return;  
-  const name = $("categoryName").value.trim();  
-  if (!name) return;  
+const categoryForm = $("categoryForm");
+if (categoryForm) {
+  categoryForm.addEventListener("submit", async event => {  
+    event.preventDefault();  
+    if (!requireAdmin()) return;  
+    const categoryNameInput = $("categoryName");
+    if (!categoryNameInput) return;
+    const name = categoryNameInput.value.trim();  
+    if (!name) return;  
 
-  try {  
-    if (editingCategoryId !== null) {  
-      await supabaseClient.from("categories").update({ name }).eq("id", editingCategoryId);  
-      showStatus("categoryStatus", "تم تعديل القسم.");  
-    } else {  
-      await supabaseClient.from("categories").insert({ name });  
-      showStatus("categoryStatus", "تمت إضافة القسم.");  
+    try {  
+      if (editingCategoryId !== null) {  
+        await supabaseClient.from("categories").update({ name }).eq("id", editingCategoryId);  
+        showStatus("categoryStatus", "تم تعديل القسم.");  
+      } else {  
+        await supabaseClient.from("categories").insert({ name });  
+        showStatus("categoryStatus", "تمت إضافة القسم.");  
+      }  
+      resetCategoryForm();  
+      await loadCategories();  
+    } catch (error) {  
+      showStatus("categoryStatus", error.message, true);  
     }  
-    resetCategoryForm();  
-    await loadCategories();  
-  } catch (error) {  
-    showStatus("categoryStatus", error.message, true);  
-  }  
-});  
+  });  
+}
 
 function startCategoryEdit(category) {  
   if (!requireAdmin()) return;  
   editingCategoryId = category.id;  
-  $("categoryName").value = category.name;  
-  $("cancelCategoryEdit").classList.remove("hidden");  
+  const categoryNameInput = $("categoryName");
+  if (categoryNameInput) categoryNameInput.value = category.name;  
+  const cancelCategoryEdit = $("cancelCategoryEdit");
+  if (cancelCategoryEdit) cancelCategoryEdit.classList.remove("hidden");  
 }  
 
 function resetCategoryForm() {  
   editingCategoryId = null;  
-  $("categoryForm").reset();  
-  $("cancelCategoryEdit").classList.add("hidden");  
+  const categoryFormEl = $("categoryForm");
+  if (categoryFormEl) categoryFormEl.reset();  
+  const cancelCategoryEdit = $("cancelCategoryEdit");
+  if (cancelCategoryEdit) cancelCategoryEdit.classList.add("hidden");  
 }  
 
-$("cancelCategoryEdit").addEventListener("click", resetCategoryForm);  
+const cancelCategoryEditBtn = $("cancelCategoryEdit");
+if (cancelCategoryEditBtn) cancelCategoryEditBtn.addEventListener("click", resetCategoryForm);  
 
 async function deleteCategory(category) {  
   if (!requireAdmin()) return;  
@@ -687,40 +739,126 @@ async function deleteCategory(category) {
   await loadCategories();  
 }  
 
-$("productForm").addEventListener("submit", async event => {  
-  event.preventDefault();  
+const productForm = $("productForm");
+if (productForm) {
+  productForm.addEventListener("submit", async event => {  
+    event.preventDefault();  
+    if (!requireAdmin()) return;  
+
+    const nameInput = $("productName");
+    const priceInput = $("productPrice");
+    const productCategorySelect = $("productCategory");
+    const productDescTextarea = $("productDescription");
+    const productColorsInput = $("productColors");
+    const productSizesInput = $("productSizes");
+    const productImageInput = $("productImage");
+
+    if (!nameInput || !priceInput || !productCategorySelect) return;
+
+    const name = nameInput.value.trim();  
+    const price = Number(priceInput.value);  
+    const categoryId = productCategorySelect.value;  
+    const description = productDescTextarea ? productDescTextarea.value.trim() : "";  
+    const colors = productColorsInput ? productColorsInput.value.trim() : "";  
+    const sizes = productSizesInput ? productSizesInput.value.trim() : "";  
+    const imageFiles = productImageInput ? Array.from(productImageInput.files) : [];  
+
+    const saveButton = $("saveProductBtn");  
+    if (saveButton) {
+      saveButton.disabled = true;  
+      saveButton.textContent = "جارٍ الحفظ...";  
+    }
+
+    try {  
+      let imageUrls = [];  
+      const existing = editingProductId !== null ? products.find(i => String(i.id) === String(editingProductId)) : null;  
+      if (existing) {  
+        imageUrls = productImages(existing);  
+      }  
+
+      for (const imageFile of imageFiles) {  
+        const filePath = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + imageFile.name;  
+        await supabaseClient.storage.from(CONFIG.storageBucket).upload(filePath, imageFile);  
+        const { data: publicData } = supabaseClient.storage.from(CONFIG.storageBucket).getPublicUrl(filePath);  
+        imageUrls.push(publicData.publicUrl);  
+      }  
+
+      const productData = { name, price, category_id: categoryId, description, colors, sizes, image_url: imageUrls[0] || null, images: imageUrls };  
+
+      if (editingProductId !== null) {  
+        await supabaseClient.from("products").update(productData).eq("id", editingProductId);  
+      } else {  
+        await supabaseClient.from("products").insert(productData);  
+      }  
+
+      resetProductForm();  
+      await loadProducts();  
+      showStatus("productStatus", "تم الحفظ بنجاح.");  
+    } catch (error) {  
+      showStatus("productStatus", error.message, true);  
+    } finally {  
+      if (saveButton) {
+        saveButton.disabled = false;  
+        saveButton.textContent = "حفظ المنتج";  
+      }
+    }  
+  });  
+}
+
+function startProductEdit(product) {  
   if (!requireAdmin()) return;  
+  editingProductId = product.id;  
+  if ($("productName")) $("productName").value = product.name || "";  
+  if ($("productPrice")) $("productPrice").value = product.price ?? "";  
+  if ($("productCategory")) $("productCategory").value = product.category_id ?? "";  
+  if ($("productDescription")) $("productDescription").value = product.description || "";  
+  if ($("productColors")) $("productColors").value = product.colors || "";  
+  if ($("productSizes")) $("productSizes").value = product.sizes || "";  
+  if ($("cancelProductEdit")) $("cancelProductEdit").classList.remove("hidden");  
+  if ($("adminPanel")) $("adminPanel").classList.remove("hidden");  
+  const pForm = $("productForm");
+  if (pForm) pForm.scrollIntoView({ behavior: "smooth" });  
+}  
 
-  const name = $("productName").value.trim();  
-  const price = Number($("productPrice").value);  
-  const categoryId = $("productCategory").value;  
-  const description = $("productDescription").value.trim();  
-  const colors = $("productColors").value.trim();  
-  const sizes = $("productSizes").value.trim();  
-  const imageFiles = Array.from($("productImage").files);  
+function resetProductForm() {  
+  editingProductId = null;  
+  const pForm = $("productForm");
+  if (pForm) pForm.reset();  
+  const cancelProdEdit = $("cancelProductEdit");
+  if (cancelProdEdit) cancelProdEdit.classList.add("hidden");  
+}  
 
-  const saveButton = $("saveProductBtn");  
-  saveButton.disabled = true;  
-  saveButton.textContent = "جارٍ الحفظ...";  
+const cancelProductEditBtn = $("cancelProductEdit");
+if (cancelProductEditBtn) cancelProductEditBtn.addEventListener("click", resetProductForm);  
 
+async function deleteProduct(product) {  
+  if (!requireAdmin()) return;  
+  if (!confirm("هل أنت متأكد من حذف المنتج؟")) return;  
+  await supabaseClient.from("products").delete().eq("id", product.id);  
+  await loadProducts();  
+}  
+
+async function initializeApp() {  
   try {  
-    let imageUrls = [];  
-    const existing = editingProductId !== null ? products.find(i => String(i.id) === String(editingProductId)) : null;  
-    if (existing) {  
-      imageUrls = productImages(existing);  
-    }  
+    const { data } = await supabaseClient.auth.getSession();  
+    currentUser = data.session?.user || null;  
+    isAdmin = !!currentUser && currentUser.id === ADMIN_UID;  
+    setLoggedInUI();  
+    await refreshAll();  
+  } catch (error) {  
+    showStatus("catalogStatus", error.message, true);  
+  }  
+}  
 
-    for (const imageFile of imageFiles) {  
-      const filePath = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + imageFile.name;  
-      await supabaseClient.storage.from(CONFIG.storageBucket).upload(filePath, imageFile);  
-      const { data: publicData } = supabaseClient.storage.from(CONFIG.storageBucket).getPublicUrl(filePath);  
-      imageUrls.push(publicData.publicUrl);  
-    }  
+initializeApp();  
+</script>  
 
-    const productData = { name, price, category_id: categoryId, description, colors, sizes, image_url: imageUrls[0] || null, images: imageUrls };  
-
-    if (editingProductId !== null) {  
-      await supabaseClient.from("products").update(productData).eq("id", editingProductId);  
-    } else {  
-      await supabaseClient.from("products").insert(productData);  
-    
+<script>  
+if ("serviceWorker" in navigator) {  
+  window.addEventListener("load", function () {  
+    navigator.serviceWorker.register("/MR/sw.js?v=7", { scope: "/MR/" });  
+  });  
+}  
+</script>  
+</body>  
+</html>
